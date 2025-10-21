@@ -12,23 +12,16 @@ const connections = {
 };
 
 const connect = async () => {
-    console.log("Intentando conectar a las bases de datos...");
+    console.log("Conectando a BDs...");
     try {
-        connections.defaultConn = await mongoose.createConnection(
-            "mongodb://127.0.0.1:27017/db-documents",
-            { useNewUrlParser: true, useUnifiedTopology: true }
-        );
+        connections.defaultConn = await mongoose.createConnection("mongodb://127.0.0.1:27017/db-documents");
+        connections.teamsConn = await mongoose.createConnection("mongodb://127.0.0.1:27017/db-teams");
 
-        connections.teamsConn = await mongoose.createConnection(
-            "mongodb://127.0.0.1:27017/db-teams",
-            { useNewUrlParser: true, useUnifiedTopology: true }
-        );
-
-        console.log("::: EXITO Conectado a las BDs :::");
+        console.log("BDs conectadas");
         return connections;
     } catch (error) {
-        console.error("Error conectando a las BDs:", error);
-        throw new Error("::: ERROR No se ha podido establecer la conexion con las BDs :::");
+        console.error("Error al conectar BDs:", error.message || error);
+        throw new Error("No se pudo conectar a las bases de datos");
     }
 };
 

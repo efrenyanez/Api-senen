@@ -38,15 +38,15 @@ app.use('/api', GrupoRoutes);
 app.use('/api', ParticipantesRoutes);
 app.use('/api', PonenteRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3690;
 
 // Iniciar conexiones y servidor
 const start = async () => {
   try {
     await db.connect();
     app.listen(PORT, () => {
-      console.log(`Servidor escuchando en puerto ${PORT}`);
-      console.log('Conexiones a las bases de datos inicializadas.');
+      console.log(`El  server is running on http://localhost:${PORT}`);
+      //console.log(productos);
     });
   } catch (err) {
     console.error('No se pudo iniciar la aplicación:', err.message);
