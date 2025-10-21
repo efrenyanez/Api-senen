@@ -12,9 +12,33 @@ module.exports = {
   guardar: async (req, res) => {
     try {
       await ensureConnected();
+      const { nombre, artistaPrincipal, generoMusical, fecha, horaInicio, horaFin, lugar, direccion, ciudad, pais, precioMinimo, precioMaximo, moneda, boletosDisponibles, organizador } = req.body;
+
+      // Validar campos obligatorios
+      const faltantes = [];
+      if (!nombre) faltantes.push('nombre');
+      if (!artistaPrincipal) faltantes.push('artistaPrincipal');
+      if (!generoMusical) faltantes.push('generoMusical');
+      if (!fecha) faltantes.push('fecha');
+      if (!horaInicio) faltantes.push('horaInicio');
+      if (!horaFin) faltantes.push('horaFin');
+      if (!lugar) faltantes.push('lugar');
+      if (!direccion) faltantes.push('direccion');
+      if (!ciudad) faltantes.push('ciudad');
+      if (!pais) faltantes.push('pais');
+      if (precioMinimo === undefined) faltantes.push('precioMinimo');
+      if (precioMaximo === undefined) faltantes.push('precioMaximo');
+      if (!moneda) faltantes.push('moneda');
+      if (boletosDisponibles === undefined) faltantes.push('boletosDisponibles');
+      if (!organizador) faltantes.push('organizador');
+
+      if (faltantes.length) {
+        return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios', faltantes });
+      }
+
       const Model = ConciertosModel.getModel();
       const saved = await Model.create(req.body);
-      return res.status(201).json(saved);
+      return res.status(201).json({ status: 'success', message: 'Concierto guardado', data: saved });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error guardando concierto", error: err.message });

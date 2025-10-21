@@ -10,9 +10,15 @@ module.exports = {
   guardar: async (req, res) => {
     try {
       await ensureConnected();
+      const { nombre, fecha } = req.body;
+      const faltantes = [];
+      if (!nombre) faltantes.push('nombre');
+      if (!fecha) faltantes.push('fecha');
+      if (faltantes.length) return res.status(400).json({ status: 'error', message: 'Faltan campos', faltantes });
+
       const Model = ModelFile.getModel();
       const saved = await Model.create(req.body);
-      return res.status(201).json(saved);
+      return res.status(201).json({ status: 'success', message: 'Evento deportivo guardado', data: saved });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error guardando deporte", error: err.message });

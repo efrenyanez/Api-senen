@@ -12,9 +12,11 @@ module.exports = {
   guardar: async (req, res) => {
     try {
       await ensureConnected();
+      const { nombre } = req.body;
+      if (!nombre) return res.status(400).json({ status: 'error', message: 'Falta nombre' });
       const Model = EquiposModel.getModel();
       const saved = await Model.create(req.body);
-      return res.status(201).json(saved);
+      return res.status(201).json({ status: 'success', message: 'Equipo guardado', data: saved });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error guardando equipo", error: err.message });

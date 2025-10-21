@@ -15,42 +15,54 @@ const doc = {
   },
   host: "localhost:3690",
   schemes: ["http"],
-  // definiciones / ejemplos para que Swagger muestre el body en POST/PATCH
+  // definiciones: esquemas (sin valores por defecto) para que Swagger muestre la estructura del body
   definitions: {
     Participante: {
-      nombre: "Ana",
-      apellido: "López",
-      email: "ana.lopez@example.com",
-      telefono: "+5215512345678",
-      tipo: "asistente",
-      equipo: "60f1a2b3c4d5e6f7890abc12"
+      type: 'object',
+      properties: {
+        nombre: { type: 'string' },
+        apellido: { type: 'string' },
+        email: { type: 'string' },
+        telefono: { type: 'string' },
+        tipo: { type: 'string' },
+        equipo: { type: 'string' }
+      },
+      required: ['nombre', 'apellido']
     },
     Equipo: {
-      nombre: "Equipo A",
-      pais: "México",
-      descripcion: "Equipo de ejemplo",
-      integrantes: ["60f1a2b3c4d5e6f7890abc31"]
+      type: 'object',
+      properties: {
+        nombre: { type: 'string' },
+        pais: { type: 'string' },
+        descripcion: { type: 'string' },
+        integrantes: { type: 'array', items: { type: 'string' } }
+      },
+      required: ['nombre']
     },
     Concierto: {
-      nombre: "Noche de Rock",
-      artistaPrincipal: "La Banda X",
-      artistasInvitados: ["Banda Y"],
-      descripcion: "Concierto al aire libre",
-      generoMusical: "Rock",
-      fecha: "2025-11-15T20:00:00.000Z",
-      horaInicio: "20:00",
-      horaFin: "23:30",
-      lugar: "Auditorio Central",
-      direccion: "Av. Principal 123",
-      ciudad: "Ciudad",
-      pais: "México",
-      precioMinimo: 200,
-      precioMaximo: 700,
-      moneda: "MXN",
-      boletosDisponibles: 500,
-      organizador: "Organización X",
-      grupos: ["60f1a2b3c4d5e6f7890abc21"],
-      participantes: ["60f1a2b3c4d5e6f7890abc31"]
+      type: 'object',
+      properties: {
+        nombre: { type: 'string' },
+        artistaPrincipal: { type: 'string' },
+        artistasInvitados: { type: 'array', items: { type: 'string' } },
+        descripcion: { type: 'string' },
+        generoMusical: { type: 'string' },
+        fecha: { type: 'string', format: 'date-time' },
+        horaInicio: { type: 'string' },
+        horaFin: { type: 'string' },
+        lugar: { type: 'string' },
+        direccion: { type: 'string' },
+        ciudad: { type: 'string' },
+        pais: { type: 'string' },
+        precioMinimo: { type: 'number' },
+        precioMaximo: { type: 'number' },
+        moneda: { type: 'string' },
+        boletosDisponibles: { type: 'number' },
+        organizador: { type: 'string' },
+        grupos: { type: 'array', items: { type: 'string' } },
+        participantes: { type: 'array', items: { type: 'string' } }
+      },
+      required: ['nombre', 'artistaPrincipal', 'fecha', 'horaInicio', 'horaFin', 'lugar']
     }
   }
 };

@@ -10,9 +10,15 @@ module.exports = {
   guardar: async (req, res) => {
     try {
       await ensureConnected();
+      const { titulo, fecha } = req.body;
+      const faltantes = [];
+      if (!titulo) faltantes.push('titulo');
+      if (!fecha) faltantes.push('fecha');
+      if (faltantes.length) return res.status(400).json({ status: 'error', message: 'Faltan campos', faltantes });
+
       const Model = ModelFile.getModel();
       const saved = await Model.create(req.body);
-      return res.status(201).json(saved);
+      return res.status(201).json({ status: 'success', message: 'Conferencia guardada', data: saved });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error guardando conferencia", error: err.message });
