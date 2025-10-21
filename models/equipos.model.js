@@ -13,6 +13,7 @@ const getModel = () => {
       nombre: { type: String, required: true, trim: true },
       pais: { type: String, trim: true },
       integrantes: [{ type: Schema.Types.ObjectId, ref: "Participantes" }],
+      eventos: [{ type: Schema.Types.ObjectId, ref: "Eventos" }],
       descripcion: { type: String, trim: true },
       creadoEn: { type: Date, default: Date.now },
     });

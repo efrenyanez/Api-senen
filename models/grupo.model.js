@@ -11,6 +11,7 @@ const getModel = () => {
     genero: { type: String, trim: true },
     integrantes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Participantes" }],
     creadoEn: { type: Date, default: Date.now },
+    eventos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Eventos' }]
   });
   return conn.model("Grupo", schema);
 };

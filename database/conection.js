@@ -15,7 +15,7 @@ const connect = async () => {
     console.log("Conectando a BDs...");
     try {
         connections.defaultConn = await mongoose.createConnection("mongodb://127.0.0.1:27017/db-documents");
-        connections.teamsConn = await mongoose.createConnection("mongodb://127.0.0.1:27017/db-teams");
+        connections.teamsConn = await mongoose.createConnection("mongodb://127.0.0.1:27017/db-equipos");
 
         console.log("BDs conectadas");
         return connections;

@@ -15,6 +15,7 @@ const getModel = () => {
       telefono: { type: String, trim: true },
       tipo: { type: String, enum: ["asistente", "organizador", "ponente", "jugador"], default: "asistente" },
       equipo: { type: Schema.Types.ObjectId, ref: "Equipos" },
+      eventos: [{ type: Schema.Types.ObjectId, ref: "Eventos" }],
       creadoEn: { type: Date, default: Date.now },
     });
 

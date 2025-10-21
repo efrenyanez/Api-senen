@@ -12,6 +12,7 @@ const getModel = () => {
       bio: { type: String, trim: true },
       profesion: { type: String, trim: true },
       creadoEn: { type: Date, default: Date.now },
+      eventos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Eventos' }]
     });
     return conn.model("Ponentes", schema);
   }
