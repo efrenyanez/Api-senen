@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const db = require("../database/conection");
 const ParticipantesModel = require("../models/participantes.model");
 
@@ -12,8 +13,7 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ParticipantesModel.getModel();
-      const doc = new Model(req.body);
-      const saved = await doc.save();
+      const saved = await Model.create(req.body);
       return res.status(201).json(saved);
     } catch (err) {
       console.error(err);
@@ -35,6 +35,7 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ParticipantesModel.getModel();
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
       const item = await Model.findById(req.params.id).lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
@@ -47,6 +48,7 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ParticipantesModel.getModel();
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
       const deleted = await Model.findByIdAndDelete(req.params.id);
       if (!deleted) return res.status(404).json({ message: "No encontrado" });
       return res.json({ message: "Eliminado" });
@@ -59,7 +61,8 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ParticipantesModel.getModel();
-      const updated = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
+      const updated = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true, context: 'query' });
       if (!updated) return res.status(404).json({ message: "No encontrado" });
       return res.json(updated);
     } catch (err) {
