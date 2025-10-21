@@ -1,7 +1,9 @@
 const { trim } = require("validator");
+const mongoose = require("mongoose");
+const db = require("../database/conection");
 
-//modelo para conciertos
-const conciertosSchema = new Schema({
+//modelo para conciertos (se crea en la defaultConn / db-documents)
+const conciertosSchema = new mongoose.Schema({
     //Datos del concierto
     nombre: {
         type: String,
@@ -14,6 +16,7 @@ const conciertosSchema = new Schema({
         trim: true
     },
     artistasInvitados: {
+        // pueden ser nombres o referencias a grupos almacenados en la BD de documentos
         type: [String],
         trim: true
     },
@@ -122,6 +125,23 @@ const conciertosSchema = new Schema({
         type: Map,
         of: String
     },
+        // relaciones (IDs a otras colecciones)
+        grupos: [{ type: mongoose.Schema.Types.ObjectId, ref: "Grupo" }],
+        participantes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Participantes" }]
 });
 
-module.exports = model("Conciertos", conciertosSchema);
+// export via default connection when available
+const getModel = () => {
+    const conn = db.connections.defaultConn;
+    if (!conn) throw new Error("Default DB connection not initialized. Call connect() first.");
+
+    try {
+        return conn.model("Conciertos");
+    } catch (e) {
+        return conn.model("Conciertos", conciertosSchema);
+    }
+};
+
+module.exports = {
+    getModel,
+};
