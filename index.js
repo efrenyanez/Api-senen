@@ -13,6 +13,15 @@ const PonenteRoutes = require('./routes/Ponente.routes');
 
 const app = express();
 
+//importacion de swagger
+
+const swaggerUI = require("swagger-ui-express");
+const swaggerDocumentation = require("./swagger.json"); // JSON con require
+
+//mandar a llamar swagger ui
+
+app.use("/doc", swaggerUI.serve, swaggerUI.setup(swaggerDocumentation));
+
 app.use(cors());
 app.use(express.json());
 
