@@ -30,8 +30,25 @@ module.exports = {
     try {
       await ensureConnected();
   const Model = GrupoModel.getModel();
-  const items = await Model.find().populate('integrantes eventos').lean();
-  return res.json(items);
+      // populate local refs (integrantes)
+      const items = await Model.find().populate('integrantes').lean();
+
+      // Cargar eventos desde la conexión default (si existen ids)
+      const allEventIds = items.reduce((acc, it) => {
+        if (Array.isArray(it.eventos) && it.eventos.length) acc.push(...it.eventos.map(String));
+        return acc;
+      }, []);
+      if (allEventIds.length) {
+        try {
+          const EventoModel = require('../models/evento.model').getModel();
+          const eventosDocs = await EventoModel.find({ _id: { $in: allEventIds } }).lean();
+          const byId = eventosDocs.reduce((m, e) => { m[e._id.toString()] = e; return m; }, {});
+          items.forEach(it => { if (Array.isArray(it.eventos)) it.eventos = it.eventos.map(id => byId[id.toString()] || id); });
+        } catch (e) {
+          console.warn('No se pudieron cargar eventos (cross-db):', e.message);
+        }
+      }
+      return res.json(items);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error listando grupos", error: err.message });
@@ -42,7 +59,17 @@ module.exports = {
       await ensureConnected();
       const Model = GrupoModel.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-  const item = await Model.findById(req.params.id).populate('integrantes eventos').lean();
+      const item = await Model.findById(req.params.id).populate('integrantes').lean();
+      if (item && Array.isArray(item.eventos) && item.eventos.length) {
+        try {
+          const EventoModel = require('../models/evento.model').getModel();
+          const eventosDocs = await EventoModel.find({ _id: { $in: item.eventos } }).lean();
+          const byId = eventosDocs.reduce((m, e) => { m[e._id.toString()] = e; return m; }, {});
+          item.eventos = item.eventos.map(id => byId[id.toString()] || id);
+        } catch (e) {
+          console.warn('No se pudieron cargar eventos (cross-db):', e.message);
+        }
+      }
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {

@@ -28,7 +28,22 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
-    const items = await Model.find().populate('participantes').lean();
+      // participantes están en teamsConn: cargar ids y luego consultar en la otra conexión
+      const items = await Model.find().lean();
+      const allParticipantIds = items.reduce((acc, it) => {
+        if (Array.isArray(it.participantes) && it.participantes.length) acc.push(...it.participantes.map(String));
+        return acc;
+      }, []);
+      if (allParticipantIds.length) {
+        try {
+          const ParticipantesModel = require('../models/participantes.model').getModel();
+          const parts = await ParticipantesModel.find({ _id: { $in: allParticipantIds } }).lean();
+          const byId = parts.reduce((m,p)=>{ m[p._id.toString()]=p; return m; },{});
+          items.forEach(it=>{ if (Array.isArray(it.participantes)) it.participantes = it.participantes.map(id=> byId[id.toString()] || id); });
+        } catch(e) {
+          console.warn('No se pudieron cargar participantes (cross-db):', e.message);
+        }
+      }
       return res.json(items);
     } catch (err) {
       console.error(err);
@@ -40,7 +55,17 @@ module.exports = {
       await ensureConnected();
       const Model = ModelFile.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-    const item = await Model.findById(req.params.id).populate('participantes').lean();
+      const item = await Model.findById(req.params.id).lean();
+      if (item && Array.isArray(item.participantes) && item.participantes.length) {
+        try {
+          const ParticipantesModel = require('../models/participantes.model').getModel();
+          const parts = await ParticipantesModel.find({ _id: { $in: item.participantes } }).lean();
+          const byId = parts.reduce((m,p)=>{ m[p._id.toString()]=p; return m; },{});
+          item.participantes = item.participantes.map(id=> byId[id.toString()] || id);
+        } catch(e) {
+          console.warn('No se pudieron cargar participantes (cross-db):', e.message);
+        }
+      }
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {

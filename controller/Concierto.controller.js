@@ -90,8 +90,29 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ConciertosModel.getModel();
-  const items = await Model.find().populate('grupos participantes').lean();
-  return res.json(items);
+      // Asegurar que el modelo Grupo esté registrado en la conexión por defecto
+      try { require('../models/grupo.model').getModel(); } catch (e) { /* ignore */ }
+
+      // populate solo grupos (mismo connection/defaultConn). Participantes están en teamsConn
+      const items = await Model.find().populate('grupos').lean();
+
+      // Recolectar todos los participantes para cargarlos desde teamsConn
+      const allParticipantIds = items.reduce((acc, it) => {
+        if (Array.isArray(it.participantes) && it.participantes.length) acc.push(...it.participantes.map(String));
+        return acc;
+      }, []);
+      if (allParticipantIds.length) {
+        try {
+          const ParticipantesModel = require('../models/participantes.model').getModel();
+          const parts = await ParticipantesModel.find({ _id: { $in: allParticipantIds } }).lean();
+          const partsById = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
+          items.forEach(it=>{ if (Array.isArray(it.participantes)) it.participantes = it.participantes.map(id=> partsById[id.toString()] || id); });
+        } catch(e) {
+          console.warn('No se pudieron cargar participantes (cross-db):', e.message);
+        }
+      }
+
+      return res.json(items);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error listando conciertos", error: err.message });
@@ -102,8 +123,21 @@ module.exports = {
       await ensureConnected();
       const Model = ConciertosModel.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-  const item = await Model.findById(req.params.id).populate('grupos participantes').lean();
+      try { require('../models/grupo.model').getModel(); } catch (e) { /* ignore */ }
+      const item = await Model.findById(req.params.id).populate('grupos').lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
+
+      if (item && Array.isArray(item.participantes) && item.participantes.length) {
+        try {
+          const ParticipantesModel = require('../models/participantes.model').getModel();
+          const parts = await ParticipantesModel.find({ _id: { $in: item.participantes } }).lean();
+          const partsById = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
+          item.participantes = item.participantes.map(id=> partsById[id.toString()] || id);
+        } catch(e) {
+          console.warn('No se pudieron cargar participantes (cross-db):', e.message);
+        }
+      }
+
       return res.json(item);
     } catch (err) {
       console.error(err);

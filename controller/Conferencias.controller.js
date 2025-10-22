@@ -28,8 +28,9 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
-    const items = await Model.find().populate('ponentes participantes').lean();
-      return res.json(items);
+  // ponentes y participantes referenciados en defaultConn; populate localmente
+  const items = await Model.find().populate('ponentes participantes').lean();
+  return res.json(items);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error listando conferencias", error: err.message });
@@ -40,7 +41,7 @@ module.exports = {
       await ensureConnected();
       const Model = ModelFile.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-    const item = await Model.findById(req.params.id).populate('ponentes participantes').lean();
+  const item = await Model.findById(req.params.id).populate('ponentes participantes').lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {

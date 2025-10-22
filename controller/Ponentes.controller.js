@@ -24,7 +24,19 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
-    const items = await Model.find().populate('eventos').lean();
+      // eventos están en defaultConn: obtener ids y luego consultar en la otra conexión
+      const items = await Model.find().lean();
+      const allEventIds = items.reduce((acc, it) => { if (Array.isArray(it.eventos) && it.eventos.length) acc.push(...it.eventos.map(String)); return acc; }, []);
+      if (allEventIds.length) {
+        try {
+          const EventoModel = require('../models/evento.model').getModel();
+          const eventosDocs = await EventoModel.find({ _id: { $in: allEventIds } }).lean();
+          const byId = eventosDocs.reduce((m,e)=>{ m[e._id.toString()] = e; return m; },{});
+          items.forEach(it=>{ if (Array.isArray(it.eventos)) it.eventos = it.eventos.map(id=> byId[id.toString()] || id); });
+        } catch(e) {
+          console.warn('No se pudieron cargar eventos (cross-db):', e.message);
+        }
+      }
       return res.json(items);
     } catch (err) {
       console.error(err);
@@ -36,7 +48,17 @@ module.exports = {
       await ensureConnected();
       const Model = ModelFile.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-    const item = await Model.findById(req.params.id).populate('eventos').lean();
+      const item = await Model.findById(req.params.id).lean();
+      if (item && Array.isArray(item.eventos) && item.eventos.length) {
+        try {
+          const EventoModel = require('../models/evento.model').getModel();
+          const eventosDocs = await EventoModel.find({ _id: { $in: item.eventos } }).lean();
+          const byId = eventosDocs.reduce((m,e)=>{ m[e._id.toString()] = e; return m; },{});
+          item.eventos = item.eventos.map(id=> byId[id.toString()] || id);
+        } catch(e) {
+          console.warn('No se pudieron cargar eventos (cross-db):', e.message);
+        }
+      }
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {

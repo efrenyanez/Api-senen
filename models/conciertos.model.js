@@ -129,8 +129,6 @@ const conciertosSchema = new mongoose.Schema({
         grupos: [{ type: mongoose.Schema.Types.ObjectId, ref: "Grupo" }],
         participantes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Participantes" }]
 });
-
-// export via default connection when available
 const getModel = () => {
     const conn = db.connections.defaultConn;
     if (!conn) throw new Error("Default DB connection not initialized. Call connect() first.");

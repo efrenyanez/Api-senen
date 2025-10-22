@@ -28,7 +28,35 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
-    const items = await Model.find().populate('equipos participantes').lean();
+      // cargar items sin populate cross-db
+      const items = await Model.find().lean();
+
+      // recopilar ids de equipos y participantes
+      const allTeamIds = [];
+      const allParticipantIds = [];
+      items.forEach(it => {
+        if (Array.isArray(it.equipos)) allTeamIds.push(...it.equipos.map(String));
+        if (Array.isArray(it.participantes)) allParticipantIds.push(...it.participantes.map(String));
+      });
+
+      // cargar desde teamsConn si hay ids
+      try {
+        const EquiposModel = require('../models/equipos.model').getModel();
+        const ParticipantesModel = require('../models/participantes.model').getModel();
+        const [teams, parts] = await Promise.all([
+          allTeamIds.length ? EquiposModel.find({ _id: { $in: allTeamIds } }).lean() : [],
+          allParticipantIds.length ? ParticipantesModel.find({ _id: { $in: allParticipantIds } }).lean() : []
+        ]);
+        const teamsById = teams.reduce((m,t)=>{ m[t._id.toString()] = t; return m; },{});
+        const partsById = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
+        items.forEach(it=>{
+          if (Array.isArray(it.equipos)) it.equipos = it.equipos.map(id=> teamsById[id.toString()] || id);
+          if (Array.isArray(it.participantes)) it.participantes = it.participantes.map(id=> partsById[id.toString()] || id);
+        });
+      } catch(e) {
+        console.warn('No se pudieron cargar equipos/participantes (cross-db):', e.message);
+      }
+
       return res.json(items);
     } catch (err) {
       console.error(err);
@@ -40,7 +68,22 @@ module.exports = {
       await ensureConnected();
       const Model = ModelFile.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-    const item = await Model.findById(req.params.id).populate('equipos participantes').lean();
+      const item = await Model.findById(req.params.id).lean();
+      if (!item) return res.status(404).json({ message: 'No encontrado' });
+      try {
+        const EquiposModel = require('../models/equipos.model').getModel();
+        const ParticipantesModel = require('../models/participantes.model').getModel();
+        const [teams, parts] = await Promise.all([
+          Array.isArray(item.equipos) && item.equipos.length ? EquiposModel.find({ _id: { $in: item.equipos } }).lean() : [],
+          Array.isArray(item.participantes) && item.participantes.length ? ParticipantesModel.find({ _id: { $in: item.participantes } }).lean() : []
+        ]);
+        const teamsById = teams.reduce((m,t)=>{ m[t._id.toString()] = t; return m; },{});
+        const partsById = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
+        if (Array.isArray(item.equipos)) item.equipos = item.equipos.map(id=> teamsById[id.toString()] || id);
+        if (Array.isArray(item.participantes)) item.participantes = item.participantes.map(id=> partsById[id.toString()] || id);
+      } catch(e) {
+        console.warn('No se pudieron cargar equipos/participantes (cross-db):', e.message);
+      }
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {
