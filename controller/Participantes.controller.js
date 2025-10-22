@@ -42,8 +42,10 @@ module.exports = {
   listarParticipantes: async (req, res) => {
     try {
       await ensureConnected();
-      const Model = ParticipantesModel.getModel();
-      const items = await Model.find().populate('equipo').lean();
+  const Model = ParticipantesModel.getModel();
+  // Asegurar que Equipos esté registrado en teamsConn antes de poblar 'equipo'
+  try { require('../models/equipos.model').getModel(); } catch (e) { /* ignore */ }
+  const items = await Model.find().populate('equipo').lean();
 
       // Cargar eventos desde defaultConn si hay ids
       const allEventIds = items.reduce((acc, it) => {
@@ -69,9 +71,10 @@ module.exports = {
   obtenerParticipantePorId: async (req, res) => {
     try {
       await ensureConnected();
-      const Model = ParticipantesModel.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const item = await Model.findById(req.params.id).populate('equipo').lean();
+  const Model = ParticipantesModel.getModel();
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
+  try { require('../models/equipos.model').getModel(); } catch (e) { /* ignore */ }
+  const item = await Model.findById(req.params.id).populate('equipo').lean();
       if (item && Array.isArray(item.eventos) && item.eventos.length) {
         try {
           const EventoModel = require('../models/evento.model').getModel();

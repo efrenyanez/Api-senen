@@ -30,11 +30,31 @@ module.exports = {
     try {
       await ensureConnected();
   const Model = GrupoModel.getModel();
-  // Asegurar que el modelo Participantes esté registrado en la conexión de teams
-  try { require('../models/participantes.model').getModel(); } catch (e) { /* ignore */ }
+      // Asegurar que el modelo Participantes esté registrado en la conexión de teams
+      try { require('../models/participantes.model').getModel(); } catch (e) { /* ignore */ }
 
-  // populate local refs (integrantes)
-  const items = await Model.find().populate('integrantes').lean();
+      // No hacer populate cross-DB; obtener items y luego cargar participantes desde teamsConn
+      const items = await Model.find().lean();
+
+      // Recolectar todos los ids de participantes (soportar campos 'integrantes' y 'miembros')
+      const allParticipantIds = items.reduce((acc, it) => {
+        if (Array.isArray(it.integrantes) && it.integrantes.length) acc.push(...it.integrantes.map(String));
+        if (Array.isArray(it.miembros) && it.miembros.length) acc.push(...it.miembros.map(String));
+        return acc;
+      }, []);
+      if (allParticipantIds.length) {
+        try {
+          const ParticipantesModel = require('../models/participantes.model').getModel();
+          const parts = await ParticipantesModel.find({ _id: { $in: allParticipantIds } }).lean();
+          const byId = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
+          items.forEach(it => {
+            if (Array.isArray(it.integrantes)) it.integrantes = it.integrantes.map(id => byId[id.toString()] || id);
+            if (Array.isArray(it.miembros)) it.miembros = it.miembros.map(id => byId[id.toString()] || id);
+          });
+        } catch (e) {
+          console.warn('No se pudieron cargar participantes (cross-db):', e.message);
+        }
+      }
 
       // Cargar eventos desde la conexión default (si existen ids)
       const allEventIds = items.reduce((acc, it) => {
@@ -62,7 +82,24 @@ module.exports = {
       await ensureConnected();
       const Model = GrupoModel.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const item = await Model.findById(req.params.id).populate('integrantes').lean();
+      // No populate cross-DB; cargar participantes desde teamsConn si existen
+      const item = await Model.findById(req.params.id).lean();
+      if (item && (Array.isArray(item.integrantes) && item.integrantes.length || Array.isArray(item.miembros) && item.miembros.length)) {
+        try {
+          const ParticipantesModel = require('../models/participantes.model').getModel();
+          const ids = [];
+          if (Array.isArray(item.integrantes)) ids.push(...item.integrantes.map(String));
+          if (Array.isArray(item.miembros)) ids.push(...item.miembros.map(String));
+          if (ids.length) {
+            const parts = await ParticipantesModel.find({ _id: { $in: ids } }).lean();
+            const byId = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
+            if (Array.isArray(item.integrantes)) item.integrantes = item.integrantes.map(id => byId[id.toString()] || id);
+            if (Array.isArray(item.miembros)) item.miembros = item.miembros.map(id => byId[id.toString()] || id);
+          }
+        } catch(e) {
+          console.warn('No se pudieron cargar participantes (cross-db):', e.message);
+        }
+      }
       if (item && Array.isArray(item.eventos) && item.eventos.length) {
         try {
           const EventoModel = require('../models/evento.model').getModel();
