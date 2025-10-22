@@ -20,6 +20,21 @@ module.exports = {
       const Model = EquiposModel.getModel();
       const nuevo = new Model({ nombre, pais, integrantes, descripcion, eventos });
       const saved = await nuevo.save();
+
+      // Si se proporcionaron integrantes, actualizar su campo 'equipo'
+      if (integrantes && integrantes.length) {
+        try {
+          const ParticipantesModel = require('../models/participantes.model');
+          const Participantes = ParticipantesModel.getModel();
+          await Participantes.updateMany(
+            { _id: { $in: integrantes } },
+            { $set: { equipo: saved._id } }
+          );
+        } catch (e) {
+          console.warn('No se pudo enlazar integrantes con equipo:', e.message);
+        }
+      }
+
       return res.status(201).json({ status: 'success', message: 'Equipo guardado', data: saved });
     } catch (err) {
       console.error(err);

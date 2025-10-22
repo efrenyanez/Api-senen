@@ -21,6 +21,18 @@ module.exports = {
       const Model = ParticipantesModel.getModel();
       const nuevo = new Model({ nombre, apellido, email, telefono, tipo, equipo });
       const saved = await nuevo.save();
+
+      // Si se proporcionó equipo, agregar referencia en el documento del equipo
+      if (equipo) {
+        try {
+          const EquiposModel = require('../models/equipos.model');
+          const Equipos = EquiposModel.getModel();
+          await Equipos.findByIdAndUpdate(equipo, { $addToSet: { integrantes: saved._id } });
+        } catch (e) {
+          console.warn('No se pudo enlazar participante con equipo:', e.message);
+        }
+      }
+
       return res.status(201).json({ status: 'success', message: 'Participante guardado', data: saved });
     } catch (err) {
       console.error(err);

@@ -24,7 +24,7 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
-      const items = await Model.find().lean();
+    const items = await Model.find().populate('eventos').lean();
       return res.json(items);
     } catch (err) {
       console.error(err);
@@ -36,7 +36,7 @@ module.exports = {
       await ensureConnected();
       const Model = ModelFile.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const item = await Model.findById(req.params.id).lean();
+    const item = await Model.findById(req.params.id).populate('eventos').lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {
