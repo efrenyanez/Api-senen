@@ -1,144 +1,15 @@
 const swaggerAutogen = require("swagger-autogen")();
 
 const outputFile = "./swagger.json";
-// incluir index + rutas para que swagger-autogen detecte todos los endpoints
-const endpointsFiles = [
-  'index.js',
-  './routes/*.js',
-  './controller/*.js'
-];
+const endpointsFiles = ["index.js"];
 
 const doc = {
   info: {
-    title: "API Senen",
-    description: "API para gestión de eventos, equipos y participantes"
+    title: "API de prueba",
+    description: "Esta es una prueba de swagger"
   },
   host: "localhost:3690",
-  schemes: ["http"],
-  // definiciones: esquemas (sin valores por defecto) para que Swagger muestre la estructura del body
-  definitions: {
-    Participante: {
-      type: 'object',
-      properties: {
-        nombre: { type: 'string' },
-        apellido: { type: 'string' },
-        email: { type: 'string' },
-        telefono: { type: 'string' },
-        tipo: { type: 'string' },
-        equipo: { type: 'string' }
-      },
-      required: ['nombre', 'apellido']
-    },
-    Equipo: {
-      type: 'object',
-      properties: {
-        nombre: { type: 'string' },
-        pais: { type: 'string' },
-        descripcion: { type: 'string' },
-        integrantes: { type: 'array', items: { type: 'string' } }
-      },
-      required: ['nombre']
-    },
-    Concierto: {
-      type: 'object',
-      properties: {
-        nombre: { type: 'string' },
-        artistaPrincipal: { type: 'string' },
-        artistasInvitados: { type: 'array', items: { type: 'string' } },
-        descripcion: { type: 'string' },
-        generoMusical: { type: 'string' },
-        fecha: { type: 'string', format: 'date-time' },
-        horaInicio: { type: 'string' },
-        horaFin: { type: 'string' },
-        lugar: { type: 'string' },
-        direccion: { type: 'string' },
-        ciudad: { type: 'string' },
-        pais: { type: 'string' },
-        precioMinimo: { type: 'number' },
-        precioMaximo: { type: 'number' },
-        moneda: { type: 'string' },
-        boletosDisponibles: { type: 'number' },
-        organizador: { type: 'string' },
-        grupos: { type: 'array', items: { type: 'string' } },
-        participantes: { type: 'array', items: { type: 'string' } }
-      },
-      required: ['nombre', 'artistaPrincipal', 'fecha', 'horaInicio', 'horaFin', 'lugar']
-    }
-  }
+  schemes: ["http"]
 };
 
-// Añadir paths explícitos para que los bodies aparezcan en Swagger UI (swagger 2.0 uses 'parameters' with in: 'body')
-doc.paths = doc.paths || {};
-
-const bodyParam = (name, ref) => ([
-  { name: name, in: 'body', required: true, schema: { $ref: `#/definitions/${ref}` } }
-]);
-
-// Conciertos
-doc.paths['/api/guardarConcierto'] = { post: { parameters: bodyParam('body', 'Concierto'), responses: { '201': { description: 'Created' }, '500': { description: 'Internal Server Error' } } } };
-doc.paths['/api/actualizarConcierto/{id}'] = { patch: { parameters: [ { name: 'id', in: 'path', required: true, type: 'string' } ].concat(bodyParam('body','Concierto')), responses: { '200': { description: 'OK' } } } };
-
-// Conferencias
-doc.paths['/api/guardarConferencia'] = { post: { parameters: bodyParam('body','Participante'), responses: { '201': { description: 'Created' } } } };
-doc.paths['/api/actualizarConferencia/{id}'] = { patch: { parameters: [ { name: 'id', in: 'path', required: true, type: 'string' } ].concat(bodyParam('body','Participante')), responses: { '200': { description: 'OK' } } } };
-
-// Cultural
-doc.paths['/api/guardarCultural'] = { post: { parameters: bodyParam('body','Participante'), responses: { '201': { description: 'Created' } } } };
-doc.paths['/api/actualizarCultural/{id}'] = { patch: { parameters: [ { name: 'id', in: 'path', required: true, type: 'string' } ].concat(bodyParam('body','Participante')), responses: { '200': { description: 'OK' } } } };
-
-// Deportes
-doc.paths['/api/guardarDeportes'] = { post: { parameters: bodyParam('body','Equipo'), responses: { '201': { description: 'Created' } } } };
-doc.paths['/api/actualizarDeportes/{id}'] = { patch: { parameters: [ { name: 'id', in: 'path', required: true, type: 'string' } ].concat(bodyParam('body','Equipo')), responses: { '200': { description: 'OK' } } } };
-
-// Grupo
-doc.paths['/api/guardarGrupo'] = { post: { parameters: bodyParam('body','Equipo'), responses: { '201': { description: 'Created' } } } };
-doc.paths['/api/actualizarGrupo/{id}'] = { patch: { parameters: [ { name: 'id', in: 'path', required: true, type: 'string' } ].concat(bodyParam('body','Equipo')), responses: { '200': { description: 'OK' } } } };
-
-// Participantes
-doc.paths['/api/guardarParticipantes'] = { post: { parameters: bodyParam('body','Participante'), responses: { '201': { description: 'Created' } } } };
-doc.paths['/api/actualizarParticipantes/{id}'] = { patch: { parameters: [ { name: 'id', in: 'path', required: true, type: 'string' } ].concat(bodyParam('body','Participante')), responses: { '200': { description: 'OK' } } } };
-
-// Ponentes
-doc.paths['/api/guardarPonente'] = { post: { parameters: bodyParam('body','Participante'), responses: { '201': { description: 'Created' } } } };
-doc.paths['/api/actualizarPonente/{id}'] = { patch: { parameters: [ { name: 'id', in: 'path', required: true, type: 'string' } ].concat(bodyParam('body','Participante')), responses: { '200': { description: 'OK' } } } };
-
-swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {
-  // Post-procesamiento: inyectar parámetros 'body' para endpoints comunes
-  const fs = require('fs');
-  const path = require('path');
-  const swaggerPath = path.resolve(__dirname, outputFile);
-  try {
-    const raw = fs.readFileSync(swaggerPath, 'utf8');
-    const spec = JSON.parse(raw);
-
-    const mapDef = (p) => {
-      if (/Concierto/i.test(p)) return 'Concierto';
-      if (/Participantes|Participante/i.test(p)) return 'Participante';
-      if (/Deportes|Deporte/i.test(p)) return 'Equipo';
-      if (/Grupo/i.test(p)) return 'Equipo';
-      if (/Ponente|Ponentes/i.test(p)) return 'Participante';
-      if (/Conferencia/i.test(p)) return 'Participante';
-      if (/Cultural/i.test(p)) return 'Participante';
-      return 'Participante';
-    };
-
-    Object.keys(spec.paths || {}).forEach((p) => {
-      const item = spec.paths[p];
-      ['post', 'patch'].forEach((m) => {
-        if (item[m]) {
-          const hasBody = (item[m].parameters || []).some(pr => pr.in === 'body');
-          if (!hasBody) {
-            const def = mapDef(p);
-            item[m].parameters = item[m].parameters || [];
-            item[m].parameters.push({ name: 'body', in: 'body', required: true, schema: { $ref: `#/definitions/${def}` } });
-          }
-        }
-      });
-    });
-
-    fs.writeFileSync(swaggerPath, JSON.stringify(spec, null, 2));
-    console.log('swagger.json actualizado con parámetros body');
-  } catch (e) {
-    console.error('Error post-procesando swagger.json:', e.message || e);
-  }
-});
+swaggerAutogen(outputFile, endpointsFiles, doc);
