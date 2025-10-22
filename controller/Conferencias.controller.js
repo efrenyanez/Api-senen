@@ -28,6 +28,9 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
+  // Asegurar que el modelo Ponentes esté registrado en la conexión por defecto
+  try { require('../models/ponentes.model').getModel(); } catch (e) { /* ignore */ }
+
   // populate solo 'ponentes' (mismo connection/defaultConn). 'participantes' está en teamsConn
   const items = await Model.find().populate('ponentes').lean();
 
@@ -57,6 +60,8 @@ module.exports = {
       await ensureConnected();
       const Model = ModelFile.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
+  // asegurar Ponentes registrado
+  try { require('../models/ponentes.model').getModel(); } catch (e) { /* ignore */ }
   const item = await Model.findById(req.params.id).populate('ponentes').lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
 

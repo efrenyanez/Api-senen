@@ -45,6 +45,8 @@ module.exports = {
     try {
       await ensureConnected();
   const Model = EquiposModel.getModel();
+  // Asegurar que Participantes está registrado en teamsConn antes de poblar
+  try { require('../models/participantes.model').getModel(); } catch (e) { /* ignore */ }
   // populate integrantes (local to teamsConn)
   const items = await Model.find().populate('integrantes').lean();
 

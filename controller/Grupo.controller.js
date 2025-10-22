@@ -30,8 +30,11 @@ module.exports = {
     try {
       await ensureConnected();
   const Model = GrupoModel.getModel();
-      // populate local refs (integrantes)
-      const items = await Model.find().populate('integrantes').lean();
+  // Asegurar que el modelo Participantes esté registrado en la conexión de teams
+  try { require('../models/participantes.model').getModel(); } catch (e) { /* ignore */ }
+
+  // populate local refs (integrantes)
+  const items = await Model.find().populate('integrantes').lean();
 
       // Cargar eventos desde la conexión default (si existen ids)
       const allEventIds = items.reduce((acc, it) => {
