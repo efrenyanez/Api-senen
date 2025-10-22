@@ -28,8 +28,24 @@ module.exports = {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
-  // ponentes y participantes referenciados en defaultConn; populate localmente
-  const items = await Model.find().populate('ponentes participantes').lean();
+  // populate solo 'ponentes' (mismo connection/defaultConn). 'participantes' está en teamsConn
+  const items = await Model.find().populate('ponentes').lean();
+
+  // Recolectar participantes y cargarlos desde teamsConn
+  const allParticipantIds = items.reduce((acc, it) => {
+    if (Array.isArray(it.participantes) && it.participantes.length) acc.push(...it.participantes.map(String));
+    return acc;
+  }, []);
+  if (allParticipantIds.length) {
+    try {
+      const ParticipantesModel = require('../models/participantes.model').getModel();
+      const parts = await ParticipantesModel.find({ _id: { $in: allParticipantIds } }).lean();
+      const byId = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
+      items.forEach(it=>{ if (Array.isArray(it.participantes)) it.participantes = it.participantes.map(id=> byId[id.toString()] || id); });
+    } catch(e) {
+      console.warn('No se pudieron cargar participantes (cross-db):', e.message);
+    }
+  }
   return res.json(items);
     } catch (err) {
       console.error(err);
@@ -41,8 +57,20 @@ module.exports = {
       await ensureConnected();
       const Model = ModelFile.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-  const item = await Model.findById(req.params.id).populate('ponentes participantes').lean();
+  const item = await Model.findById(req.params.id).populate('ponentes').lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
+
+      if (item && Array.isArray(item.participantes) && item.participantes.length) {
+        try {
+          const ParticipantesModel = require('../models/participantes.model').getModel();
+          const parts = await ParticipantesModel.find({ _id: { $in: item.participantes } }).lean();
+          const byId = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
+          item.participantes = item.participantes.map(id=> byId[id.toString()] || id);
+        } catch(e) {
+          console.warn('No se pudieron cargar participantes (cross-db):', e.message);
+        }
+      }
+
       return res.json(item);
     } catch (err) {
       console.error(err);
