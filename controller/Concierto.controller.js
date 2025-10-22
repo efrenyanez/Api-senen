@@ -9,10 +9,30 @@ const ensureConnected = async () => {
 };
 
 module.exports = {
-  guardar: async (req, res) => {
+  guardarConcierto: async (req, res) => {
     try {
       await ensureConnected();
-      const { nombre, artistaPrincipal, generoMusical, fecha, horaInicio, horaFin, lugar, direccion, ciudad, pais, precioMinimo, precioMaximo, moneda, boletosDisponibles, organizador } = req.body;
+      const {
+        nombre,
+        artistaPrincipal,
+        artistasInvitados,
+        descripcion,
+        generoMusical,
+        fecha,
+        horaInicio,
+        horaFin,
+        lugar,
+        direccion,
+        ciudad,
+        pais,
+        precioMinimo,
+        precioMaximo,
+        moneda,
+        boletosDisponibles,
+        organizador,
+        grupos,
+        participantes
+      } = req.body;
 
       // Validar campos obligatorios
       const faltantes = [];
@@ -37,30 +57,52 @@ module.exports = {
       }
 
       const Model = ConciertosModel.getModel();
-      const saved = await Model.create(req.body);
+      const nuevo = new Model({
+        nombre,
+        artistaPrincipal,
+        artistasInvitados,
+        descripcion,
+        generoMusical,
+        fecha,
+        horaInicio,
+        horaFin,
+        lugar,
+        direccion,
+        ciudad,
+        pais,
+        precioMinimo,
+        precioMaximo,
+        moneda,
+        boletosDisponibles,
+        organizador,
+        grupos,
+        participantes
+      });
+
+      const saved = await nuevo.save();
       return res.status(201).json({ status: 'success', message: 'Concierto guardado', data: saved });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error guardando concierto", error: err.message });
     }
   },
-  ListarTodos: async (req, res) => {
+  listarConciertos: async (req, res) => {
     try {
       await ensureConnected();
       const Model = ConciertosModel.getModel();
-      const items = await Model.find().lean();
-      return res.json(items);
+  const items = await Model.find().populate('grupos participantes').lean();
+  return res.json(items);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error listando conciertos", error: err.message });
     }
   },
-  PlatillosPorId: async (req, res) => {
+  obtenerConciertoPorId: async (req, res) => {
     try {
       await ensureConnected();
       const Model = ConciertosModel.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const item = await Model.findById(req.params.id).lean();
+  const item = await Model.findById(req.params.id).populate('grupos participantes').lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {
@@ -68,7 +110,7 @@ module.exports = {
       return res.status(500).json({ message: "Error buscando concierto", error: err.message });
     }
   },
-  eliminarPlatillos: async (req, res) => {
+  eliminarConcierto: async (req, res) => {
     try {
       await ensureConnected();
       const Model = ConciertosModel.getModel();
@@ -81,14 +123,63 @@ module.exports = {
       return res.status(500).json({ message: "Error eliminando concierto", error: err.message });
     }
   },
-  actualizarPlatillos: async (req, res) => {
+  actualizarConcierto: async (req, res) => {
     try {
       await ensureConnected();
       const Model = ConciertosModel.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const updated = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true, context: 'query' });
-      if (!updated) return res.status(404).json({ message: "No encontrado" });
-      return res.json(updated);
+      const id = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: 'error', message: 'ID inválido' });
+
+      const {
+        nombre,
+        artistaPrincipal,
+        artistasInvitados,
+        descripcion,
+        generoMusical,
+        fecha,
+        horaInicio,
+        horaFin,
+        lugar,
+        direccion,
+        ciudad,
+        pais,
+        precioMinimo,
+        precioMaximo,
+        moneda,
+        boletosDisponibles,
+        organizador,
+        grupos,
+        participantes
+      } = req.body;
+
+      if (!nombre && !artistaPrincipal && !artistasInvitados && !descripcion && !generoMusical && !fecha && !horaInicio && !horaFin && !lugar && !direccion && !ciudad && !pais && precioMinimo === undefined && precioMaximo === undefined && !moneda && boletosDisponibles === undefined && !organizador && !grupos && !participantes) {
+        return res.status(400).json({ status: 'error', message: 'Debe proporcionar al menos un campo para actualizar' });
+      }
+
+      const datosActualizar = {};
+      if (nombre) datosActualizar.nombre = nombre;
+      if (artistaPrincipal) datosActualizar.artistaPrincipal = artistaPrincipal;
+      if (artistasInvitados) datosActualizar.artistasInvitados = artistasInvitados;
+      if (descripcion) datosActualizar.descripcion = descripcion;
+      if (generoMusical) datosActualizar.generoMusical = generoMusical;
+      if (fecha) datosActualizar.fecha = fecha;
+      if (horaInicio) datosActualizar.horaInicio = horaInicio;
+      if (horaFin) datosActualizar.horaFin = horaFin;
+      if (lugar) datosActualizar.lugar = lugar;
+      if (direccion) datosActualizar.direccion = direccion;
+      if (ciudad) datosActualizar.ciudad = ciudad;
+      if (pais) datosActualizar.pais = pais;
+      if (precioMinimo !== undefined) datosActualizar.precioMinimo = precioMinimo;
+      if (precioMaximo !== undefined) datosActualizar.precioMaximo = precioMaximo;
+      if (moneda) datosActualizar.moneda = moneda;
+      if (boletosDisponibles !== undefined) datosActualizar.boletosDisponibles = boletosDisponibles;
+      if (organizador) datosActualizar.organizador = organizador;
+      if (grupos) datosActualizar.grupos = grupos;
+      if (participantes) datosActualizar.participantes = participantes;
+
+      const updated = await Model.findByIdAndUpdate(id, datosActualizar, { new: true, runValidators: true, context: 'query' });
+      if (!updated) return res.status(404).json({ status: 'error', message: 'Concierto no encontrado' });
+      return res.status(200).json({ status: 'success', message: 'Concierto actualizado correctamente', data: updated });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error actualizando concierto", error: err.message });

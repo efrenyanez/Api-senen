@@ -12,11 +12,11 @@ const DeportesController = require("../controller/Deportes.controller");
 
 // 4.- Definir rutas
 
-router.post("/guardarDeportes", DeportesController.guardar);
-router.get("/listarDeportes", DeportesController.ListarTodos);
-router.get("/buscarDeportes/:id", DeportesController.PlatillosPorId);
-router.delete("/eliminarDeportes/:id", DeportesController.eliminarPlatillos);
-router.patch("/actualizarDeportes/:id", DeportesController.actualizarPlatillos);
+router.post("/guardarDeportes", DeportesController.guardarDeporte);
+router.get("/listarDeportes", DeportesController.listarDeportes);
+router.get("/buscarDeportes/:id", DeportesController.obtenerDeportePorId);
+router.delete("/eliminarDeportes/:id", DeportesController.eliminarDeporte);
+router.patch("/actualizarDeportes/:id", DeportesController.actualizarDeporte);
 
 // 5.- Exportar rutas
 

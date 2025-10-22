@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
   res.json({ mensaje: 'API Senen - servidor en funcionamiento' });
 });
 
-// Montar rutas bajo /api
+//montar apis
 app.use('/api', ConciertoRoutes);
 app.use('/api', ConferenciasRoutes);
 app.use('/api', CulturalRoutes);

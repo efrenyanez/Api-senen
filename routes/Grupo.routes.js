@@ -12,11 +12,11 @@ const GrupoController = require("../controller/Grupo.controller");
 
 // 4.- Definir rutas
 
-router.post("/guardarGrupo", GrupoController.guardar);
-router.get("/listarGrupo", GrupoController.ListarTodos);
-router.get("/buscarGrupo/:id", GrupoController.PlatillosPorId);
-router.delete("/eliminarGrupo/:id", GrupoController.eliminarPlatillos);
-router.patch("/actualizarGrupo/:id", GrupoController.actualizarPlatillos);
+router.post("/guardarGrupo", GrupoController.guardarGrupo);
+router.get("/listarGrupo", GrupoController.listarGrupos);
+router.get("/buscarGrupo/:id", GrupoController.obtenerGrupoPorId);
+router.delete("/eliminarGrupo/:id", GrupoController.eliminarGrupo);
+router.patch("/actualizarGrupo/:id", GrupoController.actualizarGrupo);
 
 // 5.- Exportar rutas
 

@@ -9,36 +9,40 @@ const ensureConnected = async () => {
 };
 
 module.exports = {
-  guardar: async (req, res) => {
+  guardarGrupo: async (req, res) => {
     try {
       await ensureConnected();
-      const { nombre } = req.body;
-      if (!nombre) return res.status(400).json({ status: 'error', message: 'Falta nombre' });
+      const { nombre, genero, miembros, eventos } = req.body;
+      const faltantes = [];
+      if (!nombre) faltantes.push('nombre');
+      if (faltantes.length) return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios', faltantes });
+
       const Model = GrupoModel.getModel();
-      const saved = await Model.create(req.body);
+      const nuevo = new Model({ nombre, genero, miembros, eventos });
+      const saved = await nuevo.save();
       return res.status(201).json({ status: 'success', message: 'Grupo guardado', data: saved });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error guardando grupo", error: err.message });
     }
   },
-  ListarTodos: async (req, res) => {
+  listarGrupos: async (req, res) => {
     try {
       await ensureConnected();
-      const Model = GrupoModel.getModel();
-      const items = await Model.find().lean();
-      return res.json(items);
+  const Model = GrupoModel.getModel();
+  const items = await Model.find().populate('integrantes eventos').lean();
+  return res.json(items);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error listando grupos", error: err.message });
     }
   },
-  PlatillosPorId: async (req, res) => {
+  obtenerGrupoPorId: async (req, res) => {
     try {
       await ensureConnected();
       const Model = GrupoModel.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const item = await Model.findById(req.params.id).lean();
+  const item = await Model.findById(req.params.id).populate('integrantes eventos').lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {
@@ -46,7 +50,7 @@ module.exports = {
       return res.status(500).json({ message: "Error buscando grupo", error: err.message });
     }
   },
-  eliminarPlatillos: async (req, res) => {
+  eliminarGrupo: async (req, res) => {
     try {
       await ensureConnected();
       const Model = GrupoModel.getModel();
@@ -59,14 +63,27 @@ module.exports = {
       return res.status(500).json({ message: "Error eliminando grupo", error: err.message });
     }
   },
-  actualizarPlatillos: async (req, res) => {
+  actualizarGrupo: async (req, res) => {
     try {
       await ensureConnected();
       const Model = GrupoModel.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const updated = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true, context: 'query' });
-      if (!updated) return res.status(404).json({ message: "No encontrado" });
-      return res.json(updated);
+      const id = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: 'error', message: 'ID inválido' });
+
+      const { nombre, genero, miembros, eventos } = req.body;
+      if (!nombre && !genero && !miembros && !eventos) {
+        return res.status(400).json({ status: 'error', message: 'Debe proporcionar al menos un campo para actualizar' });
+      }
+
+      const datosActualizar = {};
+      if (nombre) datosActualizar.nombre = nombre;
+      if (genero) datosActualizar.genero = genero;
+      if (miembros) datosActualizar.miembros = miembros;
+      if (eventos) datosActualizar.eventos = eventos;
+
+      const updated = await Model.findByIdAndUpdate(id, datosActualizar, { new: true, runValidators: true, context: 'query' });
+      if (!updated) return res.status(404).json({ status: 'error', message: 'Grupo no encontrado' });
+      return res.status(200).json({ status: 'success', message: 'Grupo actualizado correctamente', data: updated });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error actualizando grupo", error: err.message });

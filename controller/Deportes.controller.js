@@ -7,40 +7,40 @@ const ensureConnected = async () => {
 };
 
 module.exports = {
-  guardar: async (req, res) => {
+  guardarDeporte: async (req, res) => {
     try {
       await ensureConnected();
-      const { nombre, fecha } = req.body;
+      const { nombre, tipo, equipos, fecha } = req.body;
       const faltantes = [];
       if (!nombre) faltantes.push('nombre');
-      if (!fecha) faltantes.push('fecha');
-      if (faltantes.length) return res.status(400).json({ status: 'error', message: 'Faltan campos', faltantes });
+      if (faltantes.length) return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios', faltantes });
 
       const Model = ModelFile.getModel();
-      const saved = await Model.create(req.body);
+      const nuevo = new Model({ nombre, tipo, equipos, fecha });
+      const saved = await nuevo.save();
       return res.status(201).json({ status: 'success', message: 'Evento deportivo guardado', data: saved });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error guardando deporte", error: err.message });
     }
   },
-  ListarTodos: async (req, res) => {
+  listarDeportes: async (req, res) => {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
-      const items = await Model.find().lean();
+    const items = await Model.find().populate('equipos participantes').lean();
       return res.json(items);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error listando deportes", error: err.message });
     }
   },
-  PlatillosPorId: async (req, res) => {
+  obtenerDeportePorId: async (req, res) => {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const item = await Model.findById(req.params.id).lean();
+    const item = await Model.findById(req.params.id).populate('equipos participantes').lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {
@@ -48,7 +48,7 @@ module.exports = {
       return res.status(500).json({ message: "Error buscando deporte", error: err.message });
     }
   },
-  eliminarPlatillos: async (req, res) => {
+  eliminarDeporte: async (req, res) => {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
@@ -61,14 +61,27 @@ module.exports = {
       return res.status(500).json({ message: "Error eliminando deporte", error: err.message });
     }
   },
-  actualizarPlatillos: async (req, res) => {
+  actualizarDeporte: async (req, res) => {
     try {
       await ensureConnected();
       const Model = ModelFile.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const updated = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true, context: 'query' });
-      if (!updated) return res.status(404).json({ message: "No encontrado" });
-      return res.json(updated);
+      const id = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: 'error', message: 'ID inválido' });
+
+      const { nombre, tipo, equipos, fecha } = req.body;
+      if (!nombre && !tipo && !equipos && !fecha) {
+        return res.status(400).json({ status: 'error', message: 'Debe proporcionar al menos un campo para actualizar' });
+      }
+
+      const datosActualizar = {};
+      if (nombre) datosActualizar.nombre = nombre;
+      if (tipo) datosActualizar.tipo = tipo;
+      if (equipos) datosActualizar.equipos = equipos;
+      if (fecha) datosActualizar.fecha = fecha;
+
+      const updated = await Model.findByIdAndUpdate(id, datosActualizar, { new: true, runValidators: true, context: 'query' });
+      if (!updated) return res.status(404).json({ status: 'error', message: 'Evento deportivo no encontrado' });
+      return res.status(200).json({ status: 'success', message: 'Evento deportivo actualizado correctamente', data: updated });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error actualizando deporte", error: err.message });

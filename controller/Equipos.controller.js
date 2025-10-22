@@ -9,36 +9,40 @@ const ensureConnected = async () => {
 };
 
 module.exports = {
-  guardar: async (req, res) => {
+  guardarEquipo: async (req, res) => {
     try {
       await ensureConnected();
-      const { nombre } = req.body;
-      if (!nombre) return res.status(400).json({ status: 'error', message: 'Falta nombre' });
+      const { nombre, pais, integrantes, descripcion, eventos } = req.body;
+      const faltantes = [];
+      if (!nombre) faltantes.push('nombre');
+      if (faltantes.length) return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios', faltantes });
+
       const Model = EquiposModel.getModel();
-      const saved = await Model.create(req.body);
+      const nuevo = new Model({ nombre, pais, integrantes, descripcion, eventos });
+      const saved = await nuevo.save();
       return res.status(201).json({ status: 'success', message: 'Equipo guardado', data: saved });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error guardando equipo", error: err.message });
     }
   },
-  ListarTodos: async (req, res) => {
+  listarEquipos: async (req, res) => {
     try {
       await ensureConnected();
-      const Model = EquiposModel.getModel();
-      const items = await Model.find().lean();
-      return res.json(items);
+  const Model = EquiposModel.getModel();
+  const items = await Model.find().populate('integrantes eventos').lean();
+  return res.json(items);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error listando equipos", error: err.message });
     }
   },
-  PlatillosPorId: async (req, res) => {
+  obtenerEquipoPorId: async (req, res) => {
     try {
       await ensureConnected();
       const Model = EquiposModel.getModel();
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const item = await Model.findById(req.params.id).lean();
+  const item = await Model.findById(req.params.id).populate('integrantes eventos').lean();
       if (!item) return res.status(404).json({ message: "No encontrado" });
       return res.json(item);
     } catch (err) {
@@ -46,7 +50,7 @@ module.exports = {
       return res.status(500).json({ message: "Error buscando equipo", error: err.message });
     }
   },
-  eliminarPlatillos: async (req, res) => {
+  eliminarEquipo: async (req, res) => {
     try {
       await ensureConnected();
       const Model = EquiposModel.getModel();
@@ -59,14 +63,28 @@ module.exports = {
       return res.status(500).json({ message: "Error eliminando equipo", error: err.message });
     }
   },
-  actualizarPlatillos: async (req, res) => {
+  actualizarEquipo: async (req, res) => {
     try {
       await ensureConnected();
       const Model = EquiposModel.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const updated = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true, context: 'query' });
-      if (!updated) return res.status(404).json({ message: "No encontrado" });
-      return res.json(updated);
+      const id = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: 'error', message: 'ID inválido' });
+
+      const { nombre, pais, integrantes, descripcion, eventos } = req.body;
+      if (!nombre && !pais && !integrantes && !descripcion && !eventos) {
+        return res.status(400).json({ status: 'error', message: 'Debe proporcionar al menos un campo para actualizar' });
+      }
+
+      const datosActualizar = {};
+      if (nombre) datosActualizar.nombre = nombre;
+      if (pais) datosActualizar.pais = pais;
+      if (integrantes) datosActualizar.integrantes = integrantes;
+      if (descripcion) datosActualizar.descripcion = descripcion;
+      if (eventos) datosActualizar.eventos = eventos;
+
+      const updated = await Model.findByIdAndUpdate(id, datosActualizar, { new: true, runValidators: true, context: 'query' });
+      if (!updated) return res.status(404).json({ status: 'error', message: 'Equipo no encontrado' });
+      return res.status(200).json({ status: 'success', message: 'Equipo actualizado correctamente', data: updated });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error actualizando equipo", error: err.message });

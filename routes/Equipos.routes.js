@@ -12,11 +12,11 @@ const EquiposController = require('../controller/Equipos.controller');
 
 // 4.- Definir rutas
 
-router.post('/guardarEquipos', EquiposController.guardar);
-router.get('/listarEquipos', EquiposController.ListarTodos);
-router.get('/buscarEquipos/:id', EquiposController.PlatillosPorId);
-router.delete('/eliminarEquipos/:id', EquiposController.eliminarPlatillos);
-router.patch('/actualizarEquipos/:id', EquiposController.actualizarPlatillos);
+router.post('/guardarEquipos', EquiposController.guardarEquipo);
+router.get('/listarEquipos', EquiposController.listarEquipos);
+router.get('/buscarEquipos/:id', EquiposController.obtenerEquipoPorId);
+router.delete('/eliminarEquipos/:id', EquiposController.eliminarEquipo);
+router.patch('/actualizarEquipos/:id', EquiposController.actualizarEquipo);
 
 // 5.- Exportar rutas
 

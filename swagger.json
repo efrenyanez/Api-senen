@@ -37,6 +37,12 @@
                 "artistaPrincipal": {
                   "example": "any"
                 },
+                "artistasInvitados": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                },
                 "generoMusical": {
                   "example": "any"
                 },
@@ -74,6 +80,12 @@
                   "example": "any"
                 },
                 "organizador": {
+                  "example": "any"
+                },
+                "grupos": {
+                  "example": "any"
+                },
+                "participantes": {
                   "example": "any"
                 }
               }
@@ -169,6 +181,72 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "artistaPrincipal": {
+                  "example": "any"
+                },
+                "artistasInvitados": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                },
+                "generoMusical": {
+                  "example": "any"
+                },
+                "fecha": {
+                  "example": "any"
+                },
+                "horaInicio": {
+                  "example": "any"
+                },
+                "horaFin": {
+                  "example": "any"
+                },
+                "lugar": {
+                  "example": "any"
+                },
+                "direccion": {
+                  "example": "any"
+                },
+                "ciudad": {
+                  "example": "any"
+                },
+                "pais": {
+                  "example": "any"
+                },
+                "precioMinimo": {
+                  "example": "any"
+                },
+                "precioMaximo": {
+                  "example": "any"
+                },
+                "moneda": {
+                  "example": "any"
+                },
+                "boletosDisponibles": {
+                  "example": "any"
+                },
+                "organizador": {
+                  "example": "any"
+                },
+                "grupos": {
+                  "example": "any"
+                },
+                "participantes": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -201,6 +279,12 @@
                   "example": "any"
                 },
                 "fecha": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                },
+                "ponentes": {
                   "example": "any"
                 }
               }
@@ -296,6 +380,27 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "titulo": {
+                  "example": "any"
+                },
+                "fecha": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                },
+                "ponentes": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -423,6 +528,24 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "fecha": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -452,6 +575,12 @@
               "type": "object",
               "properties": {
                 "nombre": {
+                  "example": "any"
+                },
+                "tipo": {
+                  "example": "any"
+                },
+                "equipos": {
                   "example": "any"
                 },
                 "fecha": {
@@ -550,6 +679,27 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "tipo": {
+                  "example": "any"
+                },
+                "equipos": {
+                  "example": "any"
+                },
+                "fecha": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -579,6 +729,15 @@
               "type": "object",
               "properties": {
                 "nombre": {
+                  "example": "any"
+                },
+                "genero": {
+                  "example": "any"
+                },
+                "miembros": {
+                  "example": "any"
+                },
+                "eventos": {
                   "example": "any"
                 }
               }
@@ -674,6 +833,27 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "genero": {
+                  "example": "any"
+                },
+                "miembros": {
+                  "example": "any"
+                },
+                "eventos": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -706,6 +886,18 @@
                   "example": "any"
                 },
                 "apellido": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                },
+                "telefono": {
+                  "example": "any"
+                },
+                "tipo": {
+                  "example": "any"
+                },
+                "equipo": {
                   "example": "any"
                 }
               }
@@ -801,6 +993,36 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "apellido": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                },
+                "telefono": {
+                  "example": "any"
+                },
+                "tipo": {
+                  "example": "any"
+                },
+                "equipo": {
+                  "example": "any"
+                },
+                "eventos": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -925,6 +1147,24 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "apellido": {
+                  "example": "any"
+                },
+                "bio": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -954,6 +1194,18 @@
               "type": "object",
               "properties": {
                 "nombre": {
+                  "example": "any"
+                },
+                "pais": {
+                  "example": "any"
+                },
+                "integrantes": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                },
+                "eventos": {
                   "example": "any"
                 }
               }
@@ -1049,6 +1301,30 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "pais": {
+                  "example": "any"
+                },
+                "integrantes": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                },
+                "eventos": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {

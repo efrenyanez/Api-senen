@@ -12,11 +12,11 @@ const CulturalController = require("../controller/Cultural.controller");
 
 // 4.- Definir rutas
 
-router.post("/guardarCultural", CulturalController.guardar);
-router.get("/listarCultural", CulturalController.ListarTodos);
-router.get("/buscarCultural/:id", CulturalController.PlatillosPorId);
-router.delete("/eliminarCultural/:id", CulturalController.eliminarPlatillos);
-router.patch("/actualizarCultural/:id", CulturalController.actualizarPlatillos);
+router.post("/guardarCultural", CulturalController.guardarCultural);
+router.get("/listarCultural", CulturalController.listarCulturales);
+router.get("/buscarCultural/:id", CulturalController.obtenerCulturalPorId);
+router.delete("/eliminarCultural/:id", CulturalController.eliminarCultural);
+router.patch("/actualizarCultural/:id", CulturalController.actualizarCultural);
 
 // 5.- Exportar rutas
 
