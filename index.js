@@ -10,6 +10,7 @@ const DeportesRoutes = require('./routes/Deportes.routes');
 const GrupoRoutes = require('./routes/Grupo.routes');
 const ParticipantesRoutes = require('./routes/Participantes.routes');
 const PonenteRoutes = require('./routes/Ponente.routes');
+const EquiposRoutes = require('./routes/Equipos.routes');
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api', DeportesRoutes);
 app.use('/api', GrupoRoutes);
 app.use('/api', ParticipantesRoutes);
 app.use('/api', PonenteRoutes);
+app.use('/api', EquiposRoutes);
 
 const PORT = process.env.PORT || 3690;
 
