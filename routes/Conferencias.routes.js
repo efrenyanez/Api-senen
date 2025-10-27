@@ -1,23 +1,15 @@
-// 1.- importar express
-
+// routes/conferencias.routes.js
 const express = require("express");
-
-// 2.- Crear router
-
 const router = express.Router();
 
-// 3.- Cargar el controlador
-
+// Importar controlador
 const ConferenciaController = require("../controller/Conferencias.controller");
 
-// 4.- Definir rutas
-
-router.post("/guardarConferencia", ConferenciaController.guardarConferencia);
-router.get("/listarConferencia", ConferenciaController.listarConferencias);
-router.get("/buscarConferencia/:id", ConferenciaController.obtenerConferenciaPorId);
-router.delete("/eliminarConferencia/:id", ConferenciaController.eliminarConferencia);
-router.patch("/actualizarConferencia/:id", ConferenciaController.actualizarConferencia);
-
-// 5.- Exportar rutas
+// Rutas RESTful
+router.post("/", ConferenciaController.crearConferencia);
+router.get("/", ConferenciaController.listarConferencias);
+router.get("/:id", ConferenciaController.obtenerConferencia);
+router.patch("/:id", ConferenciaController.actualizarConferencia);
+router.delete("/:id", ConferenciaController.eliminarConferencia);
 
 module.exports = router;

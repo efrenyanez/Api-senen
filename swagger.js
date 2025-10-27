@@ -5,8 +5,8 @@ const endpointsFiles = ["index.js"];
 
 const doc = {
   info: {
-    title: "API de prueba",
-    description: "Esta es una prueba de swagger"
+    title: "API de Eventos",
+    description: "Esta es una api de eventos"
   },
   host: "localhost:3690",
   schemes: ["http"]

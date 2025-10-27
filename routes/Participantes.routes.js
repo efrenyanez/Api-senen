@@ -1,23 +1,15 @@
-// 1.- importar express
-
+// routes/participantes.routes.js
 const express = require("express");
-
-// 2.- Crear router
-
 const router = express.Router();
 
-// 3.- Cargar el controlador
-
+// Importar controlador
 const ParticipantesController = require("../controller/Participantes.controller");
 
-// 4.- Definir rutas
-
-router.post("/guardarParticipantes", ParticipantesController.guardarParticipante);
-router.get("/listarParticipantes", ParticipantesController.listarParticipantes);
-router.get("/buscarParticipantes/:id", ParticipantesController.obtenerParticipantePorId);
-router.delete("/eliminarParticipantes/:id", ParticipantesController.eliminarParticipante);
-router.patch("/actualizarParticipantes/:id", ParticipantesController.actualizarParticipante);
-
-// 5.- Exportar rutas
+// Rutas RESTful 
+router.post("/", ParticipantesController.crearParticipante);
+router.get("/", ParticipantesController.listarParticipantes);
+router.get("/:id", ParticipantesController.obtenerParticipante);
+router.patch("/:id", ParticipantesController.actualizarParticipante);
+router.delete("/:id", ParticipantesController.eliminarParticipante);
 
 module.exports = router;

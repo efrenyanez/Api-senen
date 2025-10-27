@@ -1,107 +1,216 @@
 const mongoose = require("mongoose");
-const db = require("../database/conection");
-const ModelFile = require("../models/ponentes.model");
+const PonentesModel = require("../models/ponentes.model");
 
-const ensureConnected = async () => {
-  if (!db.connections.defaultConn) await db.connect();
+// Register related models for populate
+try { require('../models/evento.model').getModel(); } catch(e) { /* ignore */ }
+
+const Ponente = () => PonentesModel.getModel();
+
+/** Crear ponente */
+const crearPonente = async (req, res) => {
+  try {
+    // 1) Recibir datos
+    const { nombre, especialidad, email, telefono, eventos, descripcion } = req.body;
+
+    // 2) Validar obligatorios
+    if (!nombre || !especialidad) {
+      return res.status(400).json({
+        status: "error",
+        message: "Faltan campos obligatorios: nombre o especialidad",
+      });
+    }
+
+    // 3) Crear y guardar
+    const nuevo = new (Ponente())({
+      nombre,
+      especialidad,
+      email,
+      telefono,
+      descripcion,
+      eventos,
+    });
+
+    const guardado = await nuevo.save();
+
+    // 4) Responder
+    return res.status(201).json({
+      status: "success",
+      message: "Ponente creado correctamente",
+      data: guardado,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al crear ponente",
+      error: err.message,
+    });
+  }
+};
+
+/** Listar ponentes */
+const listarPonentes = async (req, res) => {
+  try {
+    const items = await Ponente().find().populate("eventos");
+
+    return res.status(200).json({
+      status: "success",
+      message: "Ponentes obtenidos correctamente",
+      data: items,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al listar ponentes",
+      error: err.message,
+    });
+  }
+};
+
+/** Obtener ponente por ID */
+const obtenerPonente = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Validar ID
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        status: "error",
+        message: "ID inválido",
+      });
+    }
+
+    // 2) Buscar ponente
+    const doc = await Ponente().findById(id).populate("eventos");
+
+    // 3) No encontrado
+    if (!doc) {
+      return res.status(404).json({
+        status: "error",
+        message: "Ponente no encontrado",
+      });
+    }
+
+    // 4) OK
+    return res.status(200).json({
+      status: "success",
+      message: "Ponente encontrado",
+      data: doc,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al obtener ponente",
+      error: err.message,
+    });
+  }
+};
+
+/** Actualizar ponente */
+const actualizarPonente = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Validar ID
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        status: "error",
+        message: "ID inválido",
+      });
+    }
+
+    // 2) Recibir datos
+    const { nombre, especialidad, email, telefono, descripcion, eventos } = req.body;
+
+    // 3) Validar que haya al menos un campo
+    if (!nombre && !especialidad && !email && !telefono && !descripcion && !eventos) {
+      return res.status(400).json({
+        status: "error",
+        message: "Debe proporcionar al menos un campo para actualizar",
+      });
+    }
+
+    // 4) Armar objeto a actualizar
+    const datosActualizar = {};
+    if (nombre) datosActualizar.nombre = nombre;
+    if (especialidad) datosActualizar.especialidad = especialidad;
+    if (email) datosActualizar.email = email;
+    if (telefono) datosActualizar.telefono = telefono;
+    if (descripcion) datosActualizar.descripcion = descripcion;
+    if (eventos) datosActualizar.eventos = eventos;
+
+    // 5) Actualizar en BD
+    const actualizado = await Ponente().findByIdAndUpdate(id, datosActualizar, {
+      new: true,
+      runValidators: true,
+      context: "query",
+    });
+
+    // 6) No encontrado
+    if (!actualizado) {
+      return res.status(404).json({
+        status: "error",
+        message: "Ponente no encontrado",
+      });
+    }
+
+    // 7) OK
+    return res.status(200).json({
+      status: "success",
+      message: "Ponente actualizado correctamente",
+      data: actualizado,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al actualizar ponente",
+      error: err.message,
+    });
+  }
+};
+
+/** Eliminar ponente */
+const eliminarPonente = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Validar ID
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        status: "error",
+        message: "ID inválido",
+      });
+    }
+
+    // 2) Eliminar
+    const eliminado = await Ponente().findByIdAndDelete(id).lean();
+
+    // 3) No encontrado
+    if (!eliminado) {
+      return res.status(404).json({
+        status: "error",
+        message: "Ponente no encontrado",
+      });
+    }
+
+    // 4) OK
+    return res.status(200).json({
+      status: "success",
+      message: "Ponente eliminado correctamente",
+      data: eliminado,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al eliminar ponente",
+      error: err.message,
+    });
+  }
 };
 
 module.exports = {
-  guardarPonente: async (req, res) => {
-    try {
-      await ensureConnected();
-      const { nombre } = req.body;
-      if (!nombre) return res.status(400).json({ status: 'error', message: 'Falta nombre' });
-      const Model = ModelFile.getModel();
-      const saved = await Model.create(req.body);
-      return res.status(201).json({ status: 'success', message: 'Ponente guardado', data: saved });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error guardando ponente", error: err.message });
-    }
-  },
-  listarPonentes: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = ModelFile.getModel();
-      // eventos están en defaultConn: obtener ids y luego consultar en la otra conexión
-      const items = await Model.find().lean();
-      const allEventIds = items.reduce((acc, it) => { if (Array.isArray(it.eventos) && it.eventos.length) acc.push(...it.eventos.map(String)); return acc; }, []);
-      if (allEventIds.length) {
-        try {
-          const EventoModel = require('../models/evento.model').getModel();
-          const eventosDocs = await EventoModel.find({ _id: { $in: allEventIds } }).lean();
-          const byId = eventosDocs.reduce((m,e)=>{ m[e._id.toString()] = e; return m; },{});
-          items.forEach(it=>{ if (Array.isArray(it.eventos)) it.eventos = it.eventos.map(id=> byId[id.toString()] || id); });
-        } catch(e) {
-          console.warn('No se pudieron cargar eventos (cross-db):', e.message);
-        }
-      }
-      return res.json(items);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error listando ponentes", error: err.message });
-    }
-  },
-  obtenerPonentePorId: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = ModelFile.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const item = await Model.findById(req.params.id).lean();
-      if (item && Array.isArray(item.eventos) && item.eventos.length) {
-        try {
-          const EventoModel = require('../models/evento.model').getModel();
-          const eventosDocs = await EventoModel.find({ _id: { $in: item.eventos } }).lean();
-          const byId = eventosDocs.reduce((m,e)=>{ m[e._id.toString()] = e; return m; },{});
-          item.eventos = item.eventos.map(id=> byId[id.toString()] || id);
-        } catch(e) {
-          console.warn('No se pudieron cargar eventos (cross-db):', e.message);
-        }
-      }
-      if (!item) return res.status(404).json({ message: "No encontrado" });
-      return res.json(item);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error buscando ponente", error: err.message });
-    }
-  },
-  eliminarPonente: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = ModelFile.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const deleted = await Model.findByIdAndDelete(req.params.id);
-      if (!deleted) return res.status(404).json({ message: "No encontrado" });
-      return res.json({ message: "Eliminado" });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error eliminando ponente", error: err.message });
-    }
-  },
-  actualizarPonente: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = ModelFile.getModel();
-      const id = req.params.id;
-      if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: 'error', message: 'ID inválido' });
-
-      const { nombre, apellido, bio } = req.body;
-      if (!nombre && !apellido && !bio) {
-        return res.status(400).json({ status: 'error', message: 'Debe proporcionar al menos un campo para actualizar' });
-      }
-
-      const datosActualizar = {};
-      if (nombre) datosActualizar.nombre = nombre;
-      if (apellido) datosActualizar.apellido = apellido;
-      if (bio) datosActualizar.bio = bio;
-
-      const updated = await Model.findByIdAndUpdate(id, datosActualizar, { new: true, runValidators: true, context: 'query' });
-      if (!updated) return res.status(404).json({ status: 'error', message: 'Ponente no encontrado' });
-      return res.status(200).json({ status: 'success', message: 'Ponente actualizado correctamente', data: updated });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error actualizando ponente", error: err.message });
-    }
-  },
+  crearPonente,
+  listarPonentes,
+  obtenerPonente,
+  actualizarPonente,
+  eliminarPonente,
 };

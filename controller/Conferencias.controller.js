@@ -1,124 +1,211 @@
 const mongoose = require("mongoose");
-const db = require("../database/conection");
-const ModelFile = require("../models/conferencias.model");
+const ConferenciasModel = require("../models/conferencias.model");
+// Registrar modelos relacionados para populate
+try { require('../models/ponentes.model').getModel(); } catch(e) { /* ignore */ }
+try { require('../models/participantes.model').getModel(); } catch(e) { /* ignore */ }
 
-const ensureConnected = async () => {
-  if (!db.connections.defaultConn) await db.connect();
+const Conferencia = () => ConferenciasModel.getModel();
+
+/** Crear */
+const crearConferencia = async (req, res) => {
+  try {
+    // 1) Recibir datos
+    const { titulo, fecha, descripcion, ponentes, participantes } = req.body;
+
+    // 2) Validar obligatorios (ajusta si quieres exigir fecha)
+    if (!titulo) {
+      return res.status(400).json({
+        status: "error",
+        message: "Faltan campos obligatorios: titulo",
+      });
+    }
+
+    // 3) Crear y guardar
+    const nueva = new (Conferencia())({
+      titulo,
+      fecha,
+      descripcion,
+      ponentes,
+      participantes,
+    });
+
+    const guardada = await nueva.save();
+
+    // 4) Responder
+    return res.status(201).json({
+      status: "success",
+      message: "Conferencia guardada correctamente",
+      data: guardada,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al crear conferencia",
+      error: err.message,
+    });
+  }
+};
+
+/** Listar */
+const listarConferencias = async (req, res) => {
+  try {
+    const items = await Conferencia()
+      .find()
+      .populate("ponentes")
+      .populate("participantes");
+
+    return res.status(200).json({
+      status: "success",
+      message: "Conferencias obtenidas",
+      data: items,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al listar conferencias",
+      error: err.message,
+    });
+  }
+};
+
+/** Obtener por ID */
+const obtenerConferencia = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Validar ID
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ status: "error", message: "ID inválido" });
+    }
+
+    // 2) Buscar
+    const doc = await Conferencia()
+      .findById(id)
+      .populate("ponentes")
+      .populate("participantes");
+
+    // 3) No encontrado
+    if (!doc) {
+      return res.status(404).json({
+        status: "error",
+        message: "Conferencia no encontrada",
+      });
+    }
+
+    // 4) OK
+    return res.status(200).json({
+      status: "success",
+      message: "Conferencia encontrada",
+      data: doc,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al obtener conferencia",
+      error: err.message,
+    });
+  }
+};
+
+/** Eliminar */
+const eliminarConferencia = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Validar ID
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ status: "error", message: "ID inválido" });
+    }
+
+    // 2) Eliminar
+    const eliminado = await Conferencia().findByIdAndDelete(id).lean();
+
+    // 3) No encontrado
+    if (!eliminado) {
+      return res.status(404).json({
+        status: "error",
+        message: "Conferencia no encontrada",
+      });
+    }
+
+    // 4) OK
+    return res.status(200).json({
+      status: "success",
+      message: "Conferencia eliminada correctamente",
+      data: eliminado,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al eliminar conferencia",
+      error: err.message,
+    });
+  }
+};
+
+/** Actualizar (parcial) */
+const actualizarConferencia = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Validar ID
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ status: "error", message: "ID inválido" });
+    }
+
+    // 2) Recibir datos
+    const { titulo, fecha, descripcion, ponentes, participantes } = req.body;
+
+    // 3) Validar que venga al menos un campo
+    if (!titulo && !fecha && !descripcion && !ponentes && !participantes) {
+      return res.status(400).json({
+        status: "error",
+        message: "Debe proporcionar al menos un campo para actualizar",
+      });
+    }
+
+    // 4) Armar objeto de actualización
+    const datosActualizar = {};
+    if (titulo) datosActualizar.titulo = titulo;
+    if (fecha) datosActualizar.fecha = fecha;
+    if (descripcion) datosActualizar.descripcion = descripcion;
+    if (ponentes) datosActualizar.ponentes = ponentes;
+    if (participantes) datosActualizar.participantes = participantes;
+
+    // 5) Actualizar
+    const actualizado = await Conferencia().findByIdAndUpdate(id, datosActualizar, {
+      new: true,
+      runValidators: true,
+      context: "query",
+    });
+
+    // 6) No encontrado
+    if (!actualizado) {
+      return res.status(404).json({
+        status: "error",
+        message: "Conferencia no encontrada",
+      });
+    }
+
+    // 7) OK
+    return res.status(200).json({
+      status: "success",
+      message: "Conferencia actualizada correctamente",
+      data: actualizado,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al actualizar conferencia",
+      error: err.message,
+    });
+  }
 };
 
 module.exports = {
-  guardarConferencia: async (req, res) => {
-    try {
-      await ensureConnected();
-      const { titulo, fecha, descripcion, ponentes } = req.body;
-      const faltantes = [];
-      if (!titulo) faltantes.push('titulo');
-      if (faltantes.length) return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios', faltantes });
-
-      const Model = ModelFile.getModel();
-      const nuevo = new Model({ titulo, fecha, descripcion, ponentes });
-      const saved = await nuevo.save();
-      return res.status(201).json({ status: 'success', message: 'Conferencia guardada', data: saved });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error guardando conferencia", error: err.message });
-    }
-  },
-  listarConferencias: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = ModelFile.getModel();
-  // Asegurar que el modelo Ponentes esté registrado en la conexión por defecto
-  try { require('../models/ponentes.model').getModel(); } catch (e) { /* ignore */ }
-
-  // populate solo 'ponentes' (mismo connection/defaultConn). 'participantes' está en teamsConn
-  const items = await Model.find().populate('ponentes').lean();
-
-  // Recolectar participantes y cargarlos desde teamsConn
-  const allParticipantIds = items.reduce((acc, it) => {
-    if (Array.isArray(it.participantes) && it.participantes.length) acc.push(...it.participantes.map(String));
-    return acc;
-  }, []);
-  if (allParticipantIds.length) {
-    try {
-      const ParticipantesModel = require('../models/participantes.model').getModel();
-      const parts = await ParticipantesModel.find({ _id: { $in: allParticipantIds } }).lean();
-      const byId = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
-      items.forEach(it=>{ if (Array.isArray(it.participantes)) it.participantes = it.participantes.map(id=> byId[id.toString()] || id); });
-    } catch(e) {
-      console.warn('No se pudieron cargar participantes (cross-db):', e.message);
-    }
-  }
-  return res.json(items);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error listando conferencias", error: err.message });
-    }
-  },
-  obtenerConferenciaPorId: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = ModelFile.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-  // asegurar Ponentes registrado
-  try { require('../models/ponentes.model').getModel(); } catch (e) { /* ignore */ }
-  const item = await Model.findById(req.params.id).populate('ponentes').lean();
-      if (!item) return res.status(404).json({ message: "No encontrado" });
-
-      if (item && Array.isArray(item.participantes) && item.participantes.length) {
-        try {
-          const ParticipantesModel = require('../models/participantes.model').getModel();
-          const parts = await ParticipantesModel.find({ _id: { $in: item.participantes } }).lean();
-          const byId = parts.reduce((m,p)=>{ m[p._id.toString()] = p; return m; },{});
-          item.participantes = item.participantes.map(id=> byId[id.toString()] || id);
-        } catch(e) {
-          console.warn('No se pudieron cargar participantes (cross-db):', e.message);
-        }
-      }
-
-      return res.json(item);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error buscando conferencia", error: err.message });
-    }
-  },
-  eliminarConferencia: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = ModelFile.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const deleted = await Model.findByIdAndDelete(req.params.id);
-      if (!deleted) return res.status(404).json({ message: "No encontrado" });
-      return res.json({ message: "Eliminado" });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error eliminando conferencia", error: err.message });
-    }
-  },
-  actualizarConferencia: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = ModelFile.getModel();
-      const id = req.params.id;
-      if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: 'error', message: 'ID inválido' });
-
-      const { titulo, fecha, descripcion, ponentes } = req.body;
-      if (!titulo && !fecha && !descripcion && !ponentes) {
-        return res.status(400).json({ status: 'error', message: 'Debe proporcionar al menos un campo para actualizar' });
-      }
-
-      const datosActualizar = {};
-      if (titulo) datosActualizar.titulo = titulo;
-      if (fecha) datosActualizar.fecha = fecha;
-      if (descripcion) datosActualizar.descripcion = descripcion;
-      if (ponentes) datosActualizar.ponentes = ponentes;
-
-      const updated = await Model.findByIdAndUpdate(id, datosActualizar, { new: true, runValidators: true, context: 'query' });
-      if (!updated) return res.status(404).json({ status: 'error', message: 'Conferencia no encontrada' });
-      return res.status(200).json({ status: 'success', message: 'Conferencia actualizada correctamente', data: updated });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error actualizando conferencia", error: err.message });
-    }
-  },
+  crearConferencia,
+  listarConferencias,
+  obtenerConferencia,
+  eliminarConferencia,
+  actualizarConferencia,
 };

@@ -1,31 +1,28 @@
-// 1.- Requerir mongoose
+// database/conection.js
+const mongoose = require('mongoose');
 
-const mongoose = require("mongoose");
-
-// 2.- Crear funcion para conectarme a dos BDs
-//    - defaultConn: para documentos (eventos, grupos, etc.)
-//    - teamsConn: para equipos y participantes (BD separada)
-
+// Exportamos un objeto 'connections' que contendrá la conexión por defecto
+// Esto mantiene compatibilidad con los modelos que llaman a db.connections.defaultConn
 const connections = {
-    defaultConn: null,
-    teamsConn: null,
+  defaultConn: null,
 };
 
-const connect = async () => {
-    console.log("Conectando a BDs...");
-    try {
-        connections.defaultConn = await mongoose.createConnection("mongodb://127.0.0.1:27017/db-documents");
-        connections.teamsConn = await mongoose.createConnection("mongodb://127.0.0.1:27017/db-equipos");
-
-        console.log("BDs conectadas");
-        return connections;
-    } catch (error) {
-        console.error("Error al conectar BDs:", error.message || error);
-        throw new Error("No se pudo conectar a las bases de datos");
+const connect = async (uri = 'mongodb://127.0.0.1:27017/mi_base_principal') => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      connections.defaultConn = mongoose.connection;
+      console.log('Ya conectado a MongoDB');
+      return connections;
     }
+
+    await mongoose.connect(uri, { });
+    connections.defaultConn = mongoose.connection;
+    console.log('Conectado a MongoDB principal');
+    return connections;
+  } catch (err) {
+    console.error('Error al conectar a la BD:', err.message || err);
+    throw err;
+  }
 };
 
-module.exports = {
-    connect,
-    connections,
-};
+module.exports = { connect, connections };

@@ -1,23 +1,15 @@
-// 1.- importar express
-
+// routes/grupos.routes.js
 const express = require("express");
-
-// 2.- Crear router
-
 const router = express.Router();
 
-// 3.- Cargar el controlador
+// Importar controlador
+const GruposController = require("../controller/Grupo.controller");
 
-const GrupoController = require("../controller/Grupo.controller");
-
-// 4.- Definir rutas
-
-router.post("/guardarGrupo", GrupoController.guardarGrupo);
-router.get("/listarGrupo", GrupoController.listarGrupos);
-router.get("/buscarGrupo/:id", GrupoController.obtenerGrupoPorId);
-router.delete("/eliminarGrupo/:id", GrupoController.eliminarGrupo);
-router.patch("/actualizarGrupo/:id", GrupoController.actualizarGrupo);
-
-// 5.- Exportar rutas
+// Rutas RESTful 
+router.post("/", GruposController.crearGrupo);
+router.get("/", GruposController.listarGrupos);
+router.get("/:id", GruposController.obtenerGrupo);
+router.patch("/:id", GruposController.actualizarGrupo);
+router.delete("/:id", GruposController.eliminarGrupo);
 
 module.exports = router;

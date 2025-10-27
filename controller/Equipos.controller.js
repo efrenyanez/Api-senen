@@ -1,138 +1,214 @@
 const mongoose = require("mongoose");
-const db = require("../database/conection");
 const EquiposModel = require("../models/equipos.model");
 
-const ensureConnected = async () => {
-  if (!db.connections.teamsConn) {
-    await db.connect();
+// Registrar modelos relacionados para populate
+try { require('../models/participantes.model').getModel(); } catch(e) { /* ignore */ }
+try { require('../models/evento.model').getModel(); } catch(e) { /* ignore */ }
+
+const Equipo = () => EquiposModel.getModel();
+
+/** Crear equipo */
+const crearEquipo = async (req, res) => {
+  try {
+    // 1) Recibir datos
+    const { nombre, pais, integrantes, eventos, descripcion } = req.body;
+
+    // 2) Validar obligatorios
+    if (!nombre) {
+      return res.status(400).json({
+        status: "error",
+        message: "Faltan campos obligatorios: nombre",
+      });
+    }
+
+    // 3) Crear y guardar
+    const nuevo = new (Equipo())({
+      nombre,
+      pais,
+      integrantes,
+      eventos,
+      descripcion,
+    });
+
+    const guardado = await nuevo.save();
+
+    // 4) Responder
+    return res.status(201).json({
+      status: "success",
+      message: "Equipo guardado correctamente",
+      data: guardado,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al crear equipo",
+      error: err.message,
+    });
+  }
+};
+
+/** Listar equipos */
+const listarEquipos = async (req, res) => {
+  try {
+    const items = await Equipo().find().populate("integrantes").populate("eventos");
+    return res.status(200).json({
+      status: "success",
+      message: "Equipos obtenidos correctamente",
+      data: items,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al listar equipos",
+      error: err.message,
+    });
+  }
+};
+
+/** Obtener equipo por ID */
+const obtenerEquipo = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Validar ID
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        status: "error",
+        message: "ID inválido",
+      });
+    }
+
+    // 2) Buscar
+    const equipo = await Equipo().findById(id).populate("integrantes").populate("eventos");
+
+    // 3) No encontrado
+    if (!equipo) {
+      return res.status(404).json({
+        status: "error",
+        message: "Equipo no encontrado",
+      });
+    }
+
+    // 4) OK
+    return res.status(200).json({
+      status: "success",
+      message: "Equipo encontrado correctamente",
+      data: equipo,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al obtener equipo",
+      error: err.message,
+    });
+  }
+};
+
+/** Eliminar equipo */
+const eliminarEquipo = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Validar ID
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        status: "error",
+        message: "ID inválido",
+      });
+    }
+
+    // 2) Eliminar
+    const eliminado = await Equipo().findByIdAndDelete(id).lean();
+
+    // 3) No encontrado
+    if (!eliminado) {
+      return res.status(404).json({
+        status: "error",
+        message: "Equipo no encontrado",
+      });
+    }
+
+    // 4) OK
+    return res.status(200).json({
+      status: "success",
+      message: "Equipo eliminado correctamente",
+      data: eliminado,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al eliminar equipo",
+      error: err.message,
+    });
+  }
+};
+
+/** Actualizar equipo */
+const actualizarEquipo = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Validar ID
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        status: "error",
+        message: "ID inválido",
+      });
+    }
+
+    // 2) Recibir datos
+    const { nombre, pais, integrantes, eventos, descripcion } = req.body;
+
+    // 3) Validar al menos un campo
+    if (!nombre && !pais && !integrantes && !eventos && !descripcion) {
+      return res.status(400).json({
+        status: "error",
+        message: "Debe proporcionar al menos un campo para actualizar",
+      });
+    }
+
+    // 4) Armar objeto
+    const datosActualizar = {};
+    if (nombre) datosActualizar.nombre = nombre;
+    if (pais) datosActualizar.pais = pais;
+    if (integrantes) datosActualizar.integrantes = integrantes;
+    if (eventos) datosActualizar.eventos = eventos;
+    if (descripcion) datosActualizar.descripcion = descripcion;
+
+    // 5) Actualizar
+    const actualizado = await Equipo().findByIdAndUpdate(id, datosActualizar, {
+      new: true,
+      runValidators: true,
+      context: "query",
+    });
+
+    // 6) No encontrado
+    if (!actualizado) {
+      return res.status(404).json({
+        status: "error",
+        message: "Equipo no encontrado",
+      });
+    }
+
+    // 7) OK
+    return res.status(200).json({
+      status: "success",
+      message: "Equipo actualizado correctamente",
+      data: actualizado,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Error al actualizar equipo",
+      error: err.message,
+    });
   }
 };
 
 module.exports = {
-  guardarEquipo: async (req, res) => {
-    try {
-      await ensureConnected();
-      const { nombre, pais, integrantes, descripcion, eventos } = req.body;
-      const faltantes = [];
-      if (!nombre) faltantes.push('nombre');
-      if (faltantes.length) return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios', faltantes });
-
-      const Model = EquiposModel.getModel();
-      const nuevo = new Model({ nombre, pais, integrantes, descripcion, eventos });
-      const saved = await nuevo.save();
-
-      // Si se proporcionaron integrantes, actualizar su campo 'equipo'
-      if (integrantes && integrantes.length) {
-        try {
-          const ParticipantesModel = require('../models/participantes.model');
-          const Participantes = ParticipantesModel.getModel();
-          await Participantes.updateMany(
-            { _id: { $in: integrantes } },
-            { $set: { equipo: saved._id } }
-          );
-        } catch (e) {
-          console.warn('No se pudo enlazar integrantes con equipo:', e.message);
-        }
-      }
-
-      return res.status(201).json({ status: 'success', message: 'Equipo guardado', data: saved });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error guardando equipo", error: err.message });
-    }
-  },
-  listarEquipos: async (req, res) => {
-    try {
-      await ensureConnected();
-  const Model = EquiposModel.getModel();
-  // Asegurar que Participantes está registrado en teamsConn antes de poblar
-  try { require('../models/participantes.model').getModel(); } catch (e) { /* ignore */ }
-  // populate integrantes (local to teamsConn)
-  const items = await Model.find().populate('integrantes').lean();
-
-  // Cargar eventos desde defaultConn si existen
-  const allEventIds = items.reduce((acc, it) => {
-    if (Array.isArray(it.eventos) && it.eventos.length) acc.push(...it.eventos.map(String));
-    return acc;
-  }, []);
-  if (allEventIds.length) {
-    try {
-      const EventoModel = require('../models/evento.model').getModel();
-      const eventosDocs = await EventoModel.find({ _id: { $in: allEventIds } }).lean();
-      const byId = eventosDocs.reduce((m,e)=>{ m[e._id.toString()] = e; return m; },{});
-      items.forEach(it=>{ if (Array.isArray(it.eventos)) it.eventos = it.eventos.map(id=> byId[id.toString()] || id); });
-    } catch(e) {
-      console.warn('No se pudieron cargar eventos (cross-db):', e.message);
-    }
-  }
-  return res.json(items);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error listando equipos", error: err.message });
-    }
-  },
-  obtenerEquipoPorId: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = EquiposModel.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const item = await Model.findById(req.params.id).populate('integrantes').lean();
-      if (item && Array.isArray(item.eventos) && item.eventos.length) {
-        try {
-          const EventoModel = require('../models/evento.model').getModel();
-          const eventosDocs = await EventoModel.find({ _id: { $in: item.eventos } }).lean();
-          const byId = eventosDocs.reduce((m,e)=>{ m[e._id.toString()] = e; return m; },{});
-          item.eventos = item.eventos.map(id=> byId[id.toString()] || id);
-        } catch(e) {
-          console.warn('No se pudieron cargar eventos (cross-db):', e.message);
-        }
-      }
-      
-      if (!item) return res.status(404).json({ message: "No encontrado" });
-      return res.json(item);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error buscando equipo", error: err.message });
-    }
-  },
-  eliminarEquipo: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = EquiposModel.getModel();
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: "ID inválido" });
-      const deleted = await Model.findByIdAndDelete(req.params.id);
-      if (!deleted) return res.status(404).json({ message: "No encontrado" });
-      return res.json({ message: "Eliminado" });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error eliminando equipo", error: err.message });
-    }
-  },
-  actualizarEquipo: async (req, res) => {
-    try {
-      await ensureConnected();
-      const Model = EquiposModel.getModel();
-      const id = req.params.id;
-      if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: 'error', message: 'ID inválido' });
-
-      const { nombre, pais, integrantes, descripcion, eventos } = req.body;
-      if (!nombre && !pais && !integrantes && !descripcion && !eventos) {
-        return res.status(400).json({ status: 'error', message: 'Debe proporcionar al menos un campo para actualizar' });
-      }
-
-      const datosActualizar = {};
-      if (nombre) datosActualizar.nombre = nombre;
-      if (pais) datosActualizar.pais = pais;
-      if (integrantes) datosActualizar.integrantes = integrantes;
-      if (descripcion) datosActualizar.descripcion = descripcion;
-      if (eventos) datosActualizar.eventos = eventos;
-
-      const updated = await Model.findByIdAndUpdate(id, datosActualizar, { new: true, runValidators: true, context: 'query' });
-      if (!updated) return res.status(404).json({ status: 'error', message: 'Equipo no encontrado' });
-      return res.status(200).json({ status: 'success', message: 'Equipo actualizado correctamente', data: updated });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error actualizando equipo", error: err.message });
-    }
-  },
+  crearEquipo,
+  listarEquipos,
+  obtenerEquipo,
+  eliminarEquipo,
+  actualizarEquipo,
 };

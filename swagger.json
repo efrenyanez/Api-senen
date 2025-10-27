@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "API de prueba",
-    "description": "Esta es una prueba de swagger",
+    "title": "API de Eventos",
+    "description": "Esta es una api de eventos",
     "version": "1.0.0"
   },
   "host": "localhost:3690",
@@ -21,7 +21,7 @@
         }
       }
     },
-    "/api/guardarConcierto": {
+    "/api/conciertos/": {
       "post": {
         "description": "",
         "parameters": [
@@ -64,6 +64,9 @@
                 "ciudad": {
                   "example": "any"
                 },
+                "estado": {
+                  "example": "any"
+                },
                 "pais": {
                   "example": "any"
                 },
@@ -79,7 +82,28 @@
                 "boletosDisponibles": {
                   "example": "any"
                 },
+                "enlaceDeCompra": {
+                  "example": "any"
+                },
+                "imagenPrincipal": {
+                  "example": "any"
+                },
+                "galeriaDeImagenes": {
+                  "example": "any"
+                },
+                "videoPromocional": {
+                  "example": "any"
+                },
                 "organizador": {
+                  "example": "any"
+                },
+                "contactoOrganizador": {
+                  "example": "any"
+                },
+                "patrocinadores": {
+                  "example": "any"
+                },
+                "redesSociales": {
                   "example": "any"
                 },
                 "grupos": {
@@ -103,9 +127,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/listarConcierto": {
+      },
       "get": {
         "description": "",
         "responses": {
@@ -118,7 +140,7 @@
         }
       }
     },
-    "/api/buscarConcierto/{id}": {
+    "/api/conciertos/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -143,36 +165,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/eliminarConcierto/{id}": {
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/actualizarConcierto/{id}": {
+      },
       "patch": {
         "description": "",
         "parameters": [
@@ -221,6 +214,9 @@
                 "ciudad": {
                   "example": "any"
                 },
+                "estado": {
+                  "example": "any"
+                },
                 "pais": {
                   "example": "any"
                 },
@@ -236,7 +232,28 @@
                 "boletosDisponibles": {
                   "example": "any"
                 },
+                "enlaceDeCompra": {
+                  "example": "any"
+                },
+                "imagenPrincipal": {
+                  "example": "any"
+                },
+                "galeriaDeImagenes": {
+                  "example": "any"
+                },
+                "videoPromocional": {
+                  "example": "any"
+                },
                 "organizador": {
+                  "example": "any"
+                },
+                "contactoOrganizador": {
+                  "example": "any"
+                },
+                "patrocinadores": {
+                  "example": "any"
+                },
+                "redesSociales": {
                   "example": "any"
                 },
                 "grupos": {
@@ -263,9 +280,34 @@
             "description": "Internal Server Error"
           }
         }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
       }
     },
-    "/api/guardarConferencia": {
+    "/api/conferencias/": {
       "post": {
         "description": "",
         "parameters": [
@@ -286,6 +328,9 @@
                 },
                 "ponentes": {
                   "example": "any"
+                },
+                "participantes": {
+                  "example": "any"
                 }
               }
             }
@@ -302,9 +347,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/listarConferencia": {
+      },
       "get": {
         "description": "",
         "responses": {
@@ -317,7 +360,7 @@
         }
       }
     },
-    "/api/buscarConferencia/{id}": {
+    "/api/conferencias/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -342,36 +385,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/eliminarConferencia/{id}": {
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/actualizarConferencia/{id}": {
+      },
       "patch": {
         "description": "",
         "parameters": [
@@ -398,82 +412,12 @@
                 },
                 "ponentes": {
                   "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/guardarCultural": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "nombre": {
-                  "example": "any"
                 },
-                "fecha": {
+                "participantes": {
                   "example": "any"
                 }
               }
             }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/listarCultural": {
-      "get": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/buscarCultural/{id}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
           }
         ],
         "responses": {
@@ -490,9 +434,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/eliminarCultural/{id}": {
+      },
       "delete": {
         "description": "",
         "parameters": [
@@ -519,16 +461,10 @@
         }
       }
     },
-    "/api/actualizarCultural/{id}": {
-      "patch": {
+    "/api/cultural/": {
+      "post": {
         "description": "",
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
           {
             "name": "body",
             "in": "body",
@@ -536,54 +472,15 @@
               "type": "object",
               "properties": {
                 "nombre": {
-                  "example": "any"
-                },
-                "fecha": {
                   "example": "any"
                 },
                 "descripcion": {
                   "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/guardarDeportes": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "nombre": {
-                  "example": "any"
-                },
-                "tipo": {
-                  "example": "any"
-                },
-                "equipos": {
-                  "example": "any"
                 },
                 "fecha": {
+                  "example": "any"
+                },
+                "participantes": {
                   "example": "any"
                 }
               }
@@ -601,9 +498,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/listarDeportes": {
+      },
       "get": {
         "description": "",
         "responses": {
@@ -616,7 +511,7 @@
         }
       }
     },
-    "/api/buscarDeportes/{id}": {
+    "/api/cultural/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -641,9 +536,53 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/eliminarDeportes/{id}": {
+      },
+      "patch": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                },
+                "fecha": {
+                  "example": "any"
+                },
+                "participantes": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
       "delete": {
         "description": "",
         "parameters": [
@@ -670,7 +609,85 @@
         }
       }
     },
-    "/api/actualizarDeportes/{id}": {
+    "/api/deportes/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "tipo": {
+                  "example": "any"
+                },
+                "fecha": {
+                  "example": "any"
+                },
+                "equipos": {
+                  "example": "any"
+                },
+                "participantes": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/deportes/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
       "patch": {
         "description": "",
         "parameters": [
@@ -692,10 +709,13 @@
                 "tipo": {
                   "example": "any"
                 },
+                "fecha": {
+                  "example": "any"
+                },
                 "equipos": {
                   "example": "any"
                 },
-                "fecha": {
+                "participantes": {
                   "example": "any"
                 }
               }
@@ -716,9 +736,34 @@
             "description": "Internal Server Error"
           }
         }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
       }
     },
-    "/api/guardarGrupo": {
+    "/api/grupos/": {
       "post": {
         "description": "",
         "parameters": [
@@ -732,6 +777,9 @@
                   "example": "any"
                 },
                 "genero": {
+                  "example": "any"
+                },
+                "integrantes": {
                   "example": "any"
                 },
                 "miembros": {
@@ -755,9 +803,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/listarGrupo": {
+      },
       "get": {
         "description": "",
         "responses": {
@@ -770,7 +816,7 @@
         }
       }
     },
-    "/api/buscarGrupo/{id}": {
+    "/api/grupos/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -795,36 +841,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/eliminarGrupo/{id}": {
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/actualizarGrupo/{id}": {
+      },
       "patch": {
         "description": "",
         "parameters": [
@@ -844,6 +861,9 @@
                   "example": "any"
                 },
                 "genero": {
+                  "example": "any"
+                },
+                "integrantes": {
                   "example": "any"
                 },
                 "miembros": {
@@ -870,94 +890,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/guardarParticipantes": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "nombre": {
-                  "example": "any"
-                },
-                "apellido": {
-                  "example": "any"
-                },
-                "email": {
-                  "example": "any"
-                },
-                "telefono": {
-                  "example": "any"
-                },
-                "tipo": {
-                  "example": "any"
-                },
-                "equipo": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/listarParticipantes": {
-      "get": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/buscarParticipantes/{id}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/eliminarParticipantes/{id}": {
+      },
       "delete": {
         "description": "",
         "parameters": [
@@ -984,16 +917,10 @@
         }
       }
     },
-    "/api/actualizarParticipantes/{id}": {
-      "patch": {
+    "/api/participantes/": {
+      "post": {
         "description": "",
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
           {
             "name": "body",
             "in": "body",
@@ -1026,39 +953,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/guardarPonentes": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "nombre": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
           "201": {
             "description": "Created"
           },
@@ -1069,9 +963,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/listarPonentes": {
+      },
       "get": {
         "description": "",
         "responses": {
@@ -1084,7 +976,7 @@
         }
       }
     },
-    "/api/buscarPonentes/{id}": {
+    "/api/participantes/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -1109,36 +1001,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/eliminarPonentes/{id}": {
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/actualizarPonentes/{id}": {
+      },
       "patch": {
         "description": "",
         "parameters": [
@@ -1160,49 +1023,16 @@
                 "apellido": {
                   "example": "any"
                 },
-                "bio": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/guardarEquipos": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "nombre": {
+                "email": {
                   "example": "any"
                 },
-                "pais": {
+                "telefono": {
                   "example": "any"
                 },
-                "integrantes": {
+                "tipo": {
                   "example": "any"
                 },
-                "descripcion": {
+                "equipo": {
                   "example": "any"
                 },
                 "eventos": {
@@ -1213,43 +1043,6 @@
           }
         ],
         "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/listarEquipos": {
-      "get": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/buscarEquipos/{id}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
           "200": {
             "description": "OK"
           },
@@ -1263,9 +1056,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/eliminarEquipos/{id}": {
+      },
       "delete": {
         "description": "",
         "parameters": [
@@ -1292,7 +1083,245 @@
         }
       }
     },
-    "/api/actualizarEquipos/{id}": {
+    "/api/ponentes/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "especialidad": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                },
+                "telefono": {
+                  "example": "any"
+                },
+                "eventos": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/ponentes/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "patch": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "especialidad": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                },
+                "telefono": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                },
+                "eventos": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/equipos/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "pais": {
+                  "example": "any"
+                },
+                "integrantes": {
+                  "example": "any"
+                },
+                "eventos": {
+                  "example": "any"
+                },
+                "descripcion": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/equipos/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
       "patch": {
         "description": "",
         "parameters": [
@@ -1317,14 +1346,39 @@
                 "integrantes": {
                   "example": "any"
                 },
-                "descripcion": {
+                "eventos": {
                   "example": "any"
                 },
-                "eventos": {
+                "descripcion": {
                   "example": "any"
                 }
               }
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {

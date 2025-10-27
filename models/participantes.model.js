@@ -1,28 +1,18 @@
-const { Schema } = require("mongoose");
-const db = require("../database/conection");
+const mongoose = require('mongoose');
 
-const getModel = () => {
-  const conn = db.connections.teamsConn;
-  if (!conn) throw new Error("Teams DB connection not initialized. Call connect() first.");
+const participanteSchema = new mongoose.Schema({
+  nombre: { type: String, required: true, trim: true },
+  apellido: { type: String, trim: true },
+  email: { type: String, trim: true },
+  telefono: { type: String, trim: true },
+  tipo: { type: String, enum: ['asistente','organizador','ponente','jugador'], default: 'asistente', trim: true },
+  equipo: { type: mongoose.Schema.Types.ObjectId, ref: 'Equipo' },
+  eventos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Evento' }],
+  creadoEn: { type: Date, default: Date.now },
+}, { timestamps: true });
 
-  try {
-    return conn.model("Participantes");
-  } catch (e) {
-    const participantesSchema = new Schema({
-      nombre: { type: String, required: true, trim: true },
-      apellido: { type: String, trim: true },
-      email: { type: String, trim: true },
-      telefono: { type: String, trim: true },
-      tipo: { type: String, enum: ["asistente", "organizador", "ponente", "jugador"], default: "asistente" },
-      equipo: { type: Schema.Types.ObjectId, ref: "Equipos" },
-      eventos: [{ type: Schema.Types.ObjectId, ref: "Eventos" }],
-      creadoEn: { type: Date, default: Date.now },
-    });
+function getModel() {
+  return mongoose.models.Participante || mongoose.model('Participante', participanteSchema);
+}
 
-    return conn.model("Participantes", participantesSchema);
-  }
-};
-
-module.exports = {
-  getModel,
-};
+module.exports = { getModel };

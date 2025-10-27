@@ -1,19 +1,15 @@
-const mongoose = require("mongoose");
-const db = require("../database/conection");
+const mongoose = require('mongoose');
 
-const getModel = () => {
-  const conn = db.connections.defaultConn;
-  if (!conn) throw new Error("La conexión a la BD no está inicializada. Llama a connect() primero.");
-  if (conn.models && conn.models.Grupo) return conn.model("Grupo");
+const grupoSchema = new mongoose.Schema({
+  nombre: { type: String, required: true, trim: true },
+  genero: { type: String, trim: true },
+  integrantes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Participante' }],
+  eventos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Evento' }],
+  creadoEn: { type: Date, default: Date.now },
+}, { timestamps: true });
 
-  const schema = new mongoose.Schema({
-    nombre: { type: String, required: true, trim: true },
-    genero: { type: String, trim: true },
-    integrantes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Participantes" }],
-    creadoEn: { type: Date, default: Date.now },
-    eventos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Eventos' }]
-  });
-  return conn.model("Grupo", schema);
-};
+function getModel() {
+  return mongoose.models.Grupo || mongoose.model('Grupo', grupoSchema);
+}
 
 module.exports = { getModel };

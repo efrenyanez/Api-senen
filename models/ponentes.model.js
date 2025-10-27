@@ -1,21 +1,15 @@
-const mongoose = require("mongoose");
-const db = require("../database/conection");
+const mongoose = require('mongoose');
 
-const getModel = () => {
-  const conn = db.connections.defaultConn;
-  if (!conn) throw new Error("Default DB connection not initialized. Call connect() first.");
-  try {
-    return conn.model("Ponentes");
-  } catch (e) {
-    const schema = new mongoose.Schema({
-      nombre: { type: String, required: true, trim: true },
-      bio: { type: String, trim: true },
-      profesion: { type: String, trim: true },
-      creadoEn: { type: Date, default: Date.now },
-      eventos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Eventos' }]
-    });
-    return conn.model("Ponentes", schema);
-  }
-};
+const ponenteSchema = new mongoose.Schema({
+  nombre: { type: String, required: true, trim: true },
+  bio: { type: String, trim: true },
+  profesion: { type: String, trim: true },
+  eventos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Evento' }],
+  creadoEn: { type: Date, default: Date.now },
+}, { timestamps: true });
+
+function getModel() {
+  return mongoose.models.Ponente || mongoose.model('Ponente', ponenteSchema);
+}
 
 module.exports = { getModel };

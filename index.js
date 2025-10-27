@@ -1,57 +1,61 @@
-const express = require('express');
-const cors = require('cors');
-const db = require('./database/conection');
+//Dependencias principales
+const express = require("express");
+const cors = require("cors");
+const db = require("./database/conection");
 
-// Rutas
-const ConciertoRoutes = require('./routes/Concierto.routes');
-const ConferenciasRoutes = require('./routes/Conferencias.routes');
-const CulturalRoutes = require('./routes/Cultural.routes');
-const DeportesRoutes = require('./routes/Deportes.routes');
-const GrupoRoutes = require('./routes/Grupo.routes');
-const ParticipantesRoutes = require('./routes/Participantes.routes');
-const PonenteRoutes = require('./routes/Ponente.routes');
-const EquiposRoutes = require('./routes/Equipos.routes');
 
+//Importar rutas
+const ConciertoRoutes = require("./routes/Concierto.routes");
+const ConferenciasRoutes = require("./routes/Conferencias.routes");
+const CulturalRoutes = require("./routes/Cultural.routes");
+const DeportesRoutes = require("./routes/Deportes.routes");
+const GrupoRoutes = require("./routes/Grupo.routes");
+const ParticipantesRoutes = require("./routes/Participantes.routes");
+const PonentesRoutes = require("./routes/Ponente.routes");
+const EquiposRoutes = require("./routes/Equipos.routes");
+
+//Inicializar app
 const app = express();
 
-//importacion de swagger
-
+//Swagger (documentación API)
 const swaggerUI = require("swagger-ui-express");
-const swaggerDocumentation = require("./swagger.json"); // JSON con require
-
-//mandar a llamar swagger ui
+const swaggerDocumentation = require("./swagger.json");
 
 app.use("/doc", swaggerUI.serve, swaggerUI.setup(swaggerDocumentation));
 
+// Middlewares globales
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({ mensaje: 'API Senen - servidor en funcionamiento' });
+// Ruta base de verificación
+app.get("/", (req, res) => {
+  res.json({ mensaje: "✅ API Senen - Servidor en funcionamiento" });
 });
 
-//montar apis
-app.use('/api', ConciertoRoutes);
-app.use('/api', ConferenciasRoutes);
-app.use('/api', CulturalRoutes);
-app.use('/api', DeportesRoutes);
-app.use('/api', GrupoRoutes);
-app.use('/api', ParticipantesRoutes);
-app.use('/api', PonenteRoutes);
-app.use('/api', EquiposRoutes);
+//Montar rutas de módulos
+app.use("/api/conciertos", ConciertoRoutes);
+app.use("/api/conferencias", ConferenciasRoutes);
+app.use("/api/cultural", CulturalRoutes);
+app.use("/api/deportes", DeportesRoutes);
+app.use("/api/grupos", GrupoRoutes);
+app.use("/api/participantes", ParticipantesRoutes);
+app.use("/api/ponentes", PonentesRoutes);
+app.use("/api/equipos", EquiposRoutes);
 
+
+//Inicializar servidor
 const PORT = process.env.PORT || 3690;
 
-// Iniciar conexiones y servidor
 const start = async () => {
   try {
-    await db.connect();
+    await db.connect(); // Conecta ambas bases (defaultConn y teamsConn)
     app.listen(PORT, () => {
-      console.log(`El  server is running on http://localhost:${PORT}`);
-      //console.log(productos);
+      console.log(` Servidor corriendo en: http://localhost:${PORT}`);
+      //console.log("Bases de datos conectadas correctamente");
+      //console.log("Documentación: http://localhost:" + PORT + "/doc");
     });
   } catch (err) {
-    console.error('No se pudo iniciar la aplicación:', err.message);
+    console.error("No se pudo iniciar la aplicación:", err.message);
     process.exit(1);
   }
 };

@@ -1,27 +1,16 @@
-const { Schema } = require("mongoose");
-const db = require("../database/conection");
+const mongoose = require('mongoose');
 
-// Helper to get the teams connection (may be null until connect() is called)
-const getModel = () => {
-  const conn = db.connections.teamsConn;
-  if (!conn) throw new Error("Teams DB connection not initialized. Call connect() first.");
+const equipoSchema = new mongoose.Schema({
+  nombre: { type: String, required: true, trim: true },
+  pais: { type: String, trim: true },
+  descripcion: { type: String, trim: true },
+  integrantes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Participante' }],
+  eventos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Evento' }],
+  creadoEn: { type: Date, default: Date.now },
+}, { timestamps: true });
 
-  try {
-    return conn.model("Equipos");
-  } catch (e) {
-    const equiposSchema = new Schema({
-      nombre: { type: String, required: true, trim: true },
-      pais: { type: String, trim: true },
-      integrantes: [{ type: Schema.Types.ObjectId, ref: "Participantes" }],
-      eventos: [{ type: Schema.Types.ObjectId, ref: "Eventos" }],
-      descripcion: { type: String, trim: true },
-      creadoEn: { type: Date, default: Date.now },
-    });
+function getModel() {
+  return mongoose.models.Equipo || mongoose.model('Equipo', equipoSchema);
+}
 
-    return conn.model("Equipos", equiposSchema);
-  }
-};
-
-module.exports = {
-  getModel,
-};
+module.exports = { getModel };

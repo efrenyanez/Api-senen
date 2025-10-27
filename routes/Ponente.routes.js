@@ -1,23 +1,15 @@
-// 1.- importar express
-
+// routes/ponentes.routes.js
 const express = require("express");
-
-// 2.- Crear router
-
 const router = express.Router();
 
-// 3.- Cargar el controlador
-
+// Importar controlador
 const PonentesController = require("../controller/Ponentes.controller");
 
-// 4.- Definir rutas
-
-router.post("/guardarPonentes", PonentesController.guardarPonente);
-router.get("/listarPonentes", PonentesController.listarPonentes);
-router.get("/buscarPonentes/:id", PonentesController.obtenerPonentePorId);
-router.delete("/eliminarPonentes/:id", PonentesController.eliminarPonente);
-router.patch("/actualizarPonentes/:id", PonentesController.actualizarPonente);
-
-// 5.- Exportar rutas
+// Rutas RESTful 
+router.post("/", PonentesController.crearPonente);
+router.get("/", PonentesController.listarPonentes);
+router.get("/:id", PonentesController.obtenerPonente);
+router.patch("/:id", PonentesController.actualizarPonente);
+router.delete("/:id", PonentesController.eliminarPonente);
 
 module.exports = router;
